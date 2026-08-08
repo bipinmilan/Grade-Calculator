@@ -20,19 +20,25 @@
       </div>
       <div class="foot-col">
         <h4>Tools</h4>
-        <ul>
-          <li><a href="calculator.html#basic">Grade Calculator</a></li>
-          <li><a href="calculator.html#cgpa">Multi-Subject CGPA</a></li>
-          <li><a href="calculator.html#target">Target Grade Finder</a></li>
-        </ul>
+        <?php
+          wp_nav_menu(array(
+            'theme_location' => 'tools-menu',
+            'container' => 'ul',
+            'menu_class' => 'list-unstyled tools-menu',
+            'fallback_cb' => false
+          ));
+        ?>
       </div>
       <div class="foot-col">
-        <h4>Site</h4>
-        <ul>
-          <li><a href="#tools">Tools</a></li>
-          <li><a href="#how">How it works</a></li>
-          <li><a href="#top">Back to top</a></li>
-        </ul>
+        <h4>Pages</h4>
+        <?php
+          wp_nav_menu(array(
+            'theme_location' => 'footerpage-menu',
+            'container' => 'ul',
+            'menu_class' => 'list-unstyled footerpage-menu',
+            'fallback_cb' => false
+          ));
+        ?>
       </div>
     </div>
     <div class="foot-bottom">

@@ -154,6 +154,21 @@ function grade_calculator_scripts() {
 }
 add_action( 'wp_enqueue_scripts', 'grade_calculator_scripts' );
 
+//footer widgets
+function register_tools_menu() {
+    register_nav_menus(array(
+        'tools-menu' => __('Tools Menu', 'Grade Calculator'),
+    ));
+}
+add_action('after_setup_theme', 'register_tools_menu');
+
+function register_footerpage_menu() {
+    register_nav_menus(array(
+        'footerpage-menu' => __('Footer Pages Menu', 'Grade Calculator'),
+    ));
+}
+add_action('after_setup_theme', 'register_footerpage_menu');
+
 /**
  * Implement the Custom Header feature.
  */

@@ -43,6 +43,29 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     requestAnimationFrame(step);
   }
+  // ============================================================
+  // "How it works" tab switcher (homepage)
+  // ============================================================
+  (function () {
+    const tabs = document.querySelectorAll('.how-tab');
+    const panels = document.querySelectorAll('.how-panel');
+    if (!tabs.length || !panels.length) return; // not on this page
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function () {
+        const target = tab.dataset.tool;
+
+        tabs.forEach(t => {
+          t.classList.remove('active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+
+        panels.forEach(p => p.classList.toggle('active', p.dataset.tool === target));
+      });
+    });
+  })();
 
   // ============================================================
   // 1) Grade Calculator  (#gradeForm)
@@ -362,8 +385,6 @@ Status: ${r.passed ? "PASS" : "FAIL"}`;
       return div.innerHTML;
     }
 
-    syncTopicRows(Number(topicCountEl.value) || 5);
-
     const cgpaSummary = document.getElementById('cgpaSummary');
     let subjectCounter = 0;
     let syncing = false;
@@ -629,9 +650,9 @@ Status: ${r.passed ? "PASS" : "FAIL"}`;
     });
   })();
 
-});
-
-//*********************************************GPA to Percentage Script***************************************************//
+  // ============================================================
+  // 4) GPA ↔ Percentage Converter  (#convertForm)
+  // ============================================================
   (function () {
     const form = document.getElementById('convertForm');
     if (!form) return; // not on this page
@@ -881,695 +902,695 @@ Status: ${r.passed ? "PASS" : "FAIL"}`;
     setMode('gpa');
   })();
 
-  //**************************STUDY HOURS CALCULATOR*******************************************************************************//
-  document.addEventListener('DOMContentLoaded', function(){
-  "use strict";
+  // ============================================================
+  // 5) Study Hours Calculator  (#planForm)
+  // ============================================================
+  (function () {
+    const startDateEl = document.getElementById('startDate');
+    const examDateEl = document.getElementById('examDate');
+    const errExamDate = document.getElementById('err-examDate');
+    const errDays = document.getElementById('err-days');
+    const dayChips = document.querySelectorAll('.day-chip');
+    const sessionLengthEl = document.getElementById('sessionLength');
+    const confidenceEl = document.getElementById('confidenceSelect');
+    const difficultyEl = document.getElementById('difficultySelect');
+    const topicCountEl = document.getElementById('topicCount');
+    const topicNameField = document.getElementById('topicNameField');
+    const topicNameRows = document.getElementById('topicNameRows');
+    const form = document.getElementById('planForm');
 
-  // ---------- Weight tables (single source of truth) ----------
-  const CONF_SCORE = { weak: 3, medium: 2, strong: 1 };
-  const PRIO_SCORE = { high: 3, medium: 2, low: 1 };
-  const BASELINE_HOURS = { weak: 4, medium: 2.5, strong: 1.5 };
-  const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const requiredEls = [
+      startDateEl, examDateEl, errExamDate, errDays, sessionLengthEl,
+      confidenceEl, difficultyEl, topicCountEl, topicNameField, topicNameRows, form
+    ];
+    if (requiredEls.some(el => !el)) return; // not on this page
 
-  const startDateEl = document.getElementById('startDate');
-  const examDateEl = document.getElementById('examDate');
-  const errExamDate = document.getElementById('err-examDate');
-  const errDays = document.getElementById('err-days');
-  const dayChips = document.querySelectorAll('.day-chip');
-  const sessionLengthEl = document.getElementById('sessionLength');
-  const confidenceEl = document.getElementById('confidenceSelect');
-  const difficultyEl = document.getElementById('difficultySelect');
-  const topicCountEl = document.getElementById('topicCount');
-  const topicNameField = document.getElementById('topicNameField');
-  const topicNameRows = document.getElementById('topicNameRows');
-  const requiredEls = [
-    startDateEl, examDateEl, errExamDate, errDays, sessionLengthEl,
-    confidenceEl, difficultyEl, topicCountEl, topicNameField, topicNameRows
-  ];
-  if (requiredEls.some(el => !el)) {
-    console.warn('Study Hours Calculator: expected elements missing on this page — script not initialized.');
-    return;
-  }
-  let topicRowCounter = 0;
-  let syncingTopicCount = false;
-  const advancedToggle = document.getElementById('advancedToggle');
-  const topicsAdvanced = document.getElementById('topicsAdvanced');
-  const topicListEl = document.getElementById('topicList');
-  const includePractice = document.getElementById('includePractice');
-  const includeReview = document.getElementById('includeReview');
-  const includeWeak = document.getElementById('includeWeak');
-  const includeMock = document.getElementById('includeMock');
-  const form = document.getElementById('planForm');
-  const resultCard = document.getElementById('resultCard');
-  const toast = document.getElementById('toast');
+    // ---------- Weight tables (single source of truth) ----------
+    const CONF_SCORE = { weak: 3, medium: 2, strong: 1 };
+    const PRIO_SCORE = { high: 3, medium: 2, low: 1 };
+    const BASELINE_HOURS = { weak: 4, medium: 2.5, strong: 1.5 };
+    const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-  const badgeDays = document.getElementById('badgeDays');
-  const badgeSessions = document.getElementById('badgeSessions');
-  const badgeHours = document.getElementById('badgeHours');
-  const badgeTotal = document.getElementById('badgeTotal');
+    let topicRowCounter = 0;
+    let syncingTopicCount = false;
+    const advancedToggle = document.getElementById('advancedToggle');
+    const topicsAdvanced = document.getElementById('topicsAdvanced');
+    const topicListEl = document.getElementById('topicList');
+    const includePractice = document.getElementById('includePractice');
+    const includeReview = document.getElementById('includeReview');
+    const includeWeak = document.getElementById('includeWeak');
+    const includeMock = document.getElementById('includeMock');
+    const resultCard = document.getElementById('resultCard');
+    const toast = document.getElementById('toast');
 
-  let selectedDays = new Set([1,3,5]); // Mon/Wed/Fri default
-  let lastPlan = null;
+    const badgeDays = document.getElementById('badgeDays');
+    const badgeSessions = document.getElementById('badgeSessions');
+    const badgeHours = document.getElementById('badgeHours');
+    const badgeTotal = document.getElementById('badgeTotal');
 
-  function toISODate(d){ return d.toISOString().slice(0,10); }
-  function todayISO(){ return toISODate(new Date()); }
+    let selectedDays = new Set([1,3,5]); // Mon/Wed/Fri default
+    let lastPlan = null;
 
-  // ---------- Init defaults ----------
-  startDateEl.value = todayISO();
-  const defaultExam = new Date();
-  defaultExam.setDate(defaultExam.getDate() + 21);
-  examDateEl.value = toISODate(defaultExam);
+    function toISODate(d){ return d.toISOString().slice(0,10); }
+    function todayISO(){ return toISODate(new Date()); }
 
-  function syncDayChips(){
-    dayChips.forEach(chip => {
-      const d = Number(chip.dataset.day);
-      chip.classList.toggle('active', selectedDays.has(d));
-    });
-  }
-  dayChips.forEach(chip => {
-    chip.addEventListener('click', function(){
-      const d = Number(chip.dataset.day);
-      if (selectedDays.has(d)) selectedDays.delete(d); else selectedDays.add(d);
-      syncDayChips();
-      updateBadges();
-    });
-  });
-  syncDayChips();
+    // ---------- Init defaults ----------
+    startDateEl.value = todayISO();
+    const defaultExam = new Date();
+    defaultExam.setDate(defaultExam.getDate() + 21);
+    examDateEl.value = toISODate(defaultExam);
 
-  advancedToggle.addEventListener('change', function(){
-    topicsAdvanced.classList.toggle('show', advancedToggle.checked);
-    topicNameField.style.display = advancedToggle.checked ? 'none' : 'block';
-  });
-
-  // ---------- Live badges ----------
-  function daysUntil(){
-    const start = new Date(startDateEl.value);
-    const exam = new Date(examDateEl.value);
-    const diff = Math.round((exam - start) / (1000*60*60*24));
-    return diff;
-  }
-
-  function updateBadges(){
-    const diff = daysUntil();
-    const sessionsPerWeek = selectedDays.size;
-    const sessionMin = Number(sessionLengthEl.value);
-    const hoursPerWeek = (sessionsPerWeek * sessionMin) / 60;
-    const weeks = diff > 0 ? diff / 7 : 0;
-    const totalHours = hoursPerWeek * weeks;
-
-    badgeDays.textContent = diff > 0 ? diff : '--';
-    badgeSessions.textContent = sessionsPerWeek || '--';
-    badgeHours.textContent = hoursPerWeek ? hoursPerWeek.toFixed(1) + 'h' : '--';
-    badgeTotal.textContent = totalHours ? totalHours.toFixed(1) + 'h' : '--';
-  }
-  [startDateEl, examDateEl, sessionLengthEl, confidenceEl].forEach(el => el.addEventListener('input', updateBadges));
-  updateBadges();
-  // ---------- Toast ----------
-  let toastTimer;
-  function showToast(msg, icon = "fa-circle-check"){
-    clearTimeout(toastTimer);
-    toast.innerHTML = `<i class="fa-solid ${icon}"></i> ${msg}`;
-    toast.classList.add('show');
-    toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
-  }
-
-  // ---------- Example prefill ----------
-  document.getElementById('exampleBtn').addEventListener('click', function(){
-    const s = new Date();
-    const e = new Date(); e.setDate(e.getDate() + 14);
-    startDateEl.value = toISODate(s);
-    examDateEl.value = toISODate(e);
-    selectedDays = new Set([1,2,3,4,5]);
-    syncDayChips();
-    sessionLengthEl.value = '45';
-    difficultyEl.value = '1.0';
-    confidenceEl.value = 'weak';
-    advancedToggle.checked = true;
-    topicNameField.style.display = 'none';
-    topicsAdvanced.classList.add('show');
-    topicListEl.value = "Stoichiometry | weak | high\nGases | medium | medium\nThermochemistry | strong | low\nEquilibrium | weak | high\nAcids and Bases | medium | high";
-    updateBadges();
-    showToast('Example loaded — hit Generate Study Plan!');
-  });
-
-  function createTopicNameRow(vals = {}, index){
-    topicRowCounter++;
-    const row = document.createElement('div');
-    row.className = 'topic-name-row';
-    row.dataset.id = 'trow-' + topicRowCounter;
-    const conf = vals.confidence || confidenceEl.value;
-    const prio = vals.priority || 'medium';
-    row.innerHTML = `
-      <span class="topic-num-badge">${index}</span>
-      <input type="text" class="tname" placeholder="Topic name" value="${vals.name ? escapeHtml(vals.name) : ''}">
-      <select class="tconf">
-        <option value="weak" ${conf==='weak'?'selected':''}>Weak</option>
-        <option value="medium" ${conf==='medium'?'selected':''}>Medium</option>
-        <option value="strong" ${conf==='strong'?'selected':''}>Strong</option>
-      </select>
-      <select class="tprio">
-        <option value="low" ${prio==='low'?'selected':''}>Low priority</option>
-        <option value="medium" ${prio==='medium'?'selected':''}>Medium priority</option>
-        <option value="high" ${prio==='high'?'selected':''}>High priority</option>
-      </select>
-      <button type="button" class="topic-row-remove" aria-label="Remove topic"><i class="fa-solid fa-trash"></i></button>
-    `;
-    topicNameRows.appendChild(row);
-    row.querySelector('.topic-row-remove').addEventListener('click', function(){
-      row.remove();
-      renumberTopicRows();
-      syncTopicCountToRows();
-    });
-    return row;
-  }
-
-  function renumberTopicRows(){
-    topicNameRows.querySelectorAll('.topic-name-row').forEach((r, i) => {
-      r.querySelector('.topic-num-badge').textContent = i + 1;
-    });
-  }
-
-  function currentTopicRowData(){
-    return Array.from(topicNameRows.querySelectorAll('.topic-name-row')).map(r => ({
-      name: r.querySelector('.tname').value,
-      confidence: r.querySelector('.tconf').value,
-      priority: r.querySelector('.tprio').value
-    }));
-  }
-
-  function syncTopicRows(count){
-    count = Math.max(1, Math.min(30, count || 1));
-    syncingTopicCount = true;
-    const existing = currentTopicRowData();
-    const rows = topicNameRows.querySelectorAll('.topic-name-row');
-
-    if (count < rows.length){
-      for (let i = rows.length - 1; i >= count; i--) rows[i].remove();
-    } else if (count > rows.length){
-      for (let i = rows.length; i < count; i++){
-        createTopicNameRow(existing[i] || {}, i + 1);
-      }
-    }
-    renumberTopicRows();
-    topicCountEl.value = count;
-    syncingTopicCount = false;
-  }
-
-  function syncTopicCountToRows(){
-    if (syncingTopicCount) return;
-    topicCountEl.value = topicNameRows.children.length || 1;
-  }
-
-  topicCountEl.addEventListener('input', function(){
-    const n = parseInt(topicCountEl.value, 10);
-    if (!isNaN(n) && n >= 1) syncTopicRows(n);
-  });
-
-
-  // Fairly spreads `items` across `slotCount` slots, honoring `weights` proportionally,
-  // and guaranteeing every item gets at least 1 slot when slotCount >= items.length.
-  // This replaces sequential pool-walking, which was skipping the last topic(s).
-  function distributeItemsAcrossSlots(items, slotCount, weights){
-    if (!items.length || slotCount <= 0) return [];
-    const w = weights || items.map(() => 1);
-    const totalW = w.reduce((a,b) => a+b, 0) || 1;
-
-    let ideal = w.map(x => (x / totalW) * slotCount);
-    let counts = ideal.map(Math.floor);
-    let allocated = counts.reduce((a,b) => a+b, 0);
-    let remaining = slotCount - allocated;
-
-    const remainder = ideal.map((v,i) => v - counts[i]);
-    const order = remainder.map((r,i) => i).sort((a,b) => remainder[b] - remainder[a]);
-    let idx = 0;
-    while (remaining > 0){
-      counts[order[idx % order.length]]++;
-      remaining--; idx++;
-    }
-
-    // Guarantee at least 1 slot per item when there's room for it
-    if (slotCount >= items.length){
-      for (let i = 0; i < items.length; i++){
-        if (counts[i] === 0){
-          let maxIdx = 0;
-          for (let j = 1; j < counts.length; j++) if (counts[j] > counts[maxIdx]) maxIdx = j;
-          if (counts[maxIdx] > 0){ counts[maxIdx]--; counts[i]++; }
-        }
-      }
-    }
-
-    // Interleave round-robin so the same topic isn't scheduled several days in a row
-    const result = [];
-    let round = 0, added = true;
-    while (added){
-      added = false;
-      for (let i = 0; i < items.length; i++){
-        if (round < counts[i]){ result.push(items[i]); added = true; }
-      }
-      round++;
-    }
-    return result.slice(0, slotCount);
-  }
-
-  // ---------- Topic parsing ----------
-  function parseTopics(){
-    const raw = topicListEl.value.trim();
-    if (advancedToggle.checked && raw){
-      return raw.split('\n').map(l => l.trim()).filter(Boolean).map(line => {
-        const parts = line.split('|').map(p => p.trim().toLowerCase());
-        let conf = parts[1] && CONF_SCORE[parts[1]] ? parts[1] : confidenceEl.value;
-        let prio = parts[2] && PRIO_SCORE[parts[2]] ? parts[2] : 'medium';
-        return { name: line.split('|')[0].trim() || 'Topic', confidence: conf, priority: prio };
+    function syncDayChips(){
+      dayChips.forEach(chip => {
+        const d = Number(chip.dataset.day);
+        chip.classList.toggle('active', selectedDays.has(d));
       });
     }
-    // Named rows (default path — one row per number entered above)
-    const rows = currentTopicRowData();
-    if (rows.length){
-      return rows.map((r, i) => ({
-        name: r.name.trim() || ('Topic ' + (i + 1)),
-        confidence: CONF_SCORE[r.confidence] ? r.confidence : confidenceEl.value,
-        priority: PRIO_SCORE[r.priority] ? r.priority : 'medium'
+    dayChips.forEach(chip => {
+      chip.addEventListener('click', function(){
+        const d = Number(chip.dataset.day);
+        if (selectedDays.has(d)) selectedDays.delete(d); else selectedDays.add(d);
+        syncDayChips();
+        updateBadges();
+      });
+    });
+    syncDayChips();
+
+    advancedToggle.addEventListener('change', function(){
+      topicsAdvanced.classList.toggle('show', advancedToggle.checked);
+      topicNameField.style.display = advancedToggle.checked ? 'none' : 'block';
+    });
+
+    // ---------- Live badges ----------
+    function daysUntil(){
+      const start = new Date(startDateEl.value);
+      const exam = new Date(examDateEl.value);
+      const diff = Math.round((exam - start) / (1000*60*60*24));
+      return diff;
+    }
+
+    function updateBadges(){
+      const diff = daysUntil();
+      const sessionsPerWeek = selectedDays.size;
+      const sessionMin = Number(sessionLengthEl.value);
+      const hoursPerWeek = (sessionsPerWeek * sessionMin) / 60;
+      const weeks = diff > 0 ? diff / 7 : 0;
+      const totalHours = hoursPerWeek * weeks;
+
+      badgeDays.textContent = diff > 0 ? diff : '--';
+      badgeSessions.textContent = sessionsPerWeek || '--';
+      badgeHours.textContent = hoursPerWeek ? hoursPerWeek.toFixed(1) + 'h' : '--';
+      badgeTotal.textContent = totalHours ? totalHours.toFixed(1) + 'h' : '--';
+    }
+    [startDateEl, examDateEl, sessionLengthEl, confidenceEl].forEach(el => el.addEventListener('input', updateBadges));
+    updateBadges();
+
+    // ---------- Toast ----------
+    let toastTimer;
+    function showToast(msg, icon = "fa-circle-check"){
+      if (!toast) return;
+      clearTimeout(toastTimer);
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i> ${msg}`;
+      toast.classList.add('show');
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // ---------- Example prefill ----------
+    const exampleBtn = document.getElementById('exampleBtn');
+    if (exampleBtn) {
+      exampleBtn.addEventListener('click', function(){
+        const s = new Date();
+        const e = new Date(); e.setDate(e.getDate() + 14);
+        startDateEl.value = toISODate(s);
+        examDateEl.value = toISODate(e);
+        selectedDays = new Set([1,2,3,4,5]);
+        syncDayChips();
+        sessionLengthEl.value = '45';
+        difficultyEl.value = '1.0';
+        confidenceEl.value = 'weak';
+        advancedToggle.checked = true;
+        topicNameField.style.display = 'none';
+        topicsAdvanced.classList.add('show');
+        topicListEl.value = "Stoichiometry | weak | high\nGases | medium | medium\nThermochemistry | strong | low\nEquilibrium | weak | high\nAcids and Bases | medium | high";
+        updateBadges();
+        showToast('Example loaded — hit Generate Study Plan!');
+      });
+    }
+
+    function escapeHtml(str){
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function createTopicNameRow(vals = {}, index){
+      topicRowCounter++;
+      const row = document.createElement('div');
+      row.className = 'topic-name-row';
+      row.dataset.id = 'trow-' + topicRowCounter;
+      const conf = vals.confidence || confidenceEl.value;
+      const prio = vals.priority || 'medium';
+      row.innerHTML = `
+        <span class="topic-num-badge">${index}</span>
+        <input type="text" class="tname" placeholder="Topic name" value="${vals.name ? escapeHtml(vals.name) : ''}">
+        <select class="tconf">
+          <option value="weak" ${conf==='weak'?'selected':''}>Weak</option>
+          <option value="medium" ${conf==='medium'?'selected':''}>Medium</option>
+          <option value="strong" ${conf==='strong'?'selected':''}>Strong</option>
+        </select>
+        <select class="tprio">
+          <option value="low" ${prio==='low'?'selected':''}>Low priority</option>
+          <option value="medium" ${prio==='medium'?'selected':''}>Medium priority</option>
+          <option value="high" ${prio==='high'?'selected':''}>High priority</option>
+        </select>
+        <button type="button" class="topic-row-remove" aria-label="Remove topic"><i class="fa-solid fa-trash"></i></button>
+      `;
+      topicNameRows.appendChild(row);
+      row.querySelector('.topic-row-remove').addEventListener('click', function(){
+        row.remove();
+        renumberTopicRows();
+        syncTopicCountToRows();
+      });
+      return row;
+    }
+
+    function renumberTopicRows(){
+      topicNameRows.querySelectorAll('.topic-name-row').forEach((r, i) => {
+        r.querySelector('.topic-num-badge').textContent = i + 1;
+      });
+    }
+
+    function currentTopicRowData(){
+      return Array.from(topicNameRows.querySelectorAll('.topic-name-row')).map(r => ({
+        name: r.querySelector('.tname').value,
+        confidence: r.querySelector('.tconf').value,
+        priority: r.querySelector('.tprio').value
       }));
     }
-    // Fallback (shouldn't normally trigger)
-    const n = Math.max(1, Math.min(30, Number(topicCountEl.value) || 1));
-    const defaultConf = confidenceEl.value;
-    const topics = [];
-    for (let i = 1; i <= n; i++){ topics.push({ name: 'Topic ' + i, confidence: defaultConf, priority: 'medium' }); }
-    return topics;
-  }
 
-  // ---------- Session date generation ----------
-  function generateSessionDates(start, exam, days){
-    const dates = [];
-    let cur = new Date(start);
-    while (cur < exam){
-      if (days.has(cur.getDay())){
-        dates.push(new Date(cur));
+    function syncTopicRows(count){
+      count = Math.max(1, Math.min(30, count || 1));
+      syncingTopicCount = true;
+      const existing = currentTopicRowData();
+      const rows = topicNameRows.querySelectorAll('.topic-name-row');
+
+      if (count < rows.length){
+        for (let i = rows.length - 1; i >= count; i--) rows[i].remove();
+      } else if (count > rows.length){
+        for (let i = rows.length; i < count; i++){
+          createTopicNameRow(existing[i] || {}, i + 1);
+        }
       }
-      cur.setDate(cur.getDate() + 1);
+      renumberTopicRows();
+      topicCountEl.value = count;
+      syncingTopicCount = false;
     }
-    return dates;
-  }
 
-  function escapeHtml(str){
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  // ---------- Main generation ----------
-  form.addEventListener('submit', function(e){
-    e.preventDefault();
-    errExamDate.textContent = '';
-    errDays.textContent = '';
-    examDateEl.style.borderColor = '';
-
-    const start = new Date(startDateEl.value);
-    const exam = new Date(examDateEl.value);
-    let valid = true;
-
-    if (!(exam > start)){
-      examDateEl.style.borderColor = 'var(--red)';
-      errExamDate.textContent = 'Exam date must be after the start date.';
-      valid = false;
+    function syncTopicCountToRows(){
+      if (syncingTopicCount) return;
+      topicCountEl.value = topicNameRows.children.length || 1;
     }
-    if (selectedDays.size === 0){
-      errDays.textContent = 'Select at least one study day.';
-      valid = false;
+
+    topicCountEl.addEventListener('input', function(){
+      const n = parseInt(topicCountEl.value, 10);
+      if (!isNaN(n) && n >= 1) syncTopicRows(n);
+    });
+
+    // Fairly spreads `items` across `slotCount` slots, honoring `weights` proportionally,
+    // and guaranteeing every item gets at least 1 slot when slotCount >= items.length.
+    function distributeItemsAcrossSlots(items, slotCount, weights){
+      if (!items.length || slotCount <= 0) return [];
+      const w = weights || items.map(() => 1);
+      const totalW = w.reduce((a,b) => a+b, 0) || 1;
+
+      let ideal = w.map(x => (x / totalW) * slotCount);
+      let counts = ideal.map(Math.floor);
+      let allocated = counts.reduce((a,b) => a+b, 0);
+      let remaining = slotCount - allocated;
+
+      const remainder = ideal.map((v,i) => v - counts[i]);
+      const order = remainder.map((r,i) => i).sort((a,b) => remainder[b] - remainder[a]);
+      let idx = 0;
+      while (remaining > 0){
+        counts[order[idx % order.length]]++;
+        remaining--; idx++;
+      }
+
+      if (slotCount >= items.length){
+        for (let i = 0; i < items.length; i++){
+          if (counts[i] === 0){
+            let maxIdx = 0;
+            for (let j = 1; j < counts.length; j++) if (counts[j] > counts[maxIdx]) maxIdx = j;
+            if (counts[maxIdx] > 0){ counts[maxIdx]--; counts[i]++; }
+          }
+        }
+      }
+
+      const result = [];
+      let round = 0, added = true;
+      while (added){
+        added = false;
+        for (let i = 0; i < items.length; i++){
+          if (round < counts[i]){ result.push(items[i]); added = true; }
+        }
+        round++;
+      }
+      return result.slice(0, slotCount);
     }
-    if (!valid){ resultCard.classList.remove('show'); return; }
 
-    const sessionMin = Number(sessionLengthEl.value);
-    const difficultyMult = Number(difficultyEl.value);
-    const topics = parseTopics();
-    const sessionDates = generateSessionDates(start, exam, selectedDays);
-    const total = sessionDates.length;
+    // ---------- Topic parsing ----------
+    function parseTopics(){
+      const raw = topicListEl.value.trim();
+      if (advancedToggle.checked && raw){
+        return raw.split('\n').map(l => l.trim()).filter(Boolean).map(line => {
+          const parts = line.split('|').map(p => p.trim().toLowerCase());
+          let conf = parts[1] && CONF_SCORE[parts[1]] ? parts[1] : confidenceEl.value;
+          let prio = parts[2] && PRIO_SCORE[parts[2]] ? parts[2] : 'medium';
+          return { name: line.split('|')[0].trim() || 'Topic', confidence: conf, priority: prio };
+        });
+      }
+      const rows = currentTopicRowData();
+      if (rows.length){
+        return rows.map((r, i) => ({
+          name: r.name.trim() || ('Topic ' + (i + 1)),
+          confidence: CONF_SCORE[r.confidence] ? r.confidence : confidenceEl.value,
+          priority: PRIO_SCORE[r.priority] ? r.priority : 'medium'
+        }));
+      }
+      const n = Math.max(1, Math.min(30, Number(topicCountEl.value) || 1));
+      const defaultConf = confidenceEl.value;
+      const topics = [];
+      for (let i = 1; i <= n; i++){ topics.push({ name: 'Topic ' + i, confidence: defaultConf, priority: 'medium' }); }
+      return topics;
+    }
 
-    if (total === 0){
-      errDays.textContent = 'No study sessions fall between your start and exam date with these days selected.';
-      resultCard.classList.remove('show');
+    // ---------- Session date generation ----------
+    function generateSessionDates(start, exam, days){
+      const dates = [];
+      let cur = new Date(start);
+      while (cur < exam){
+        if (days.has(cur.getDay())){
+          dates.push(new Date(cur));
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+      return dates;
+    }
+
+    // ---------- Main generation ----------
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      errExamDate.textContent = '';
+      errDays.textContent = '';
+      examDateEl.style.borderColor = '';
+
+      const start = new Date(startDateEl.value);
+      const exam = new Date(examDateEl.value);
+      let valid = true;
+
+      if (!(exam > start)){
+        examDateEl.style.borderColor = 'var(--red)';
+        errExamDate.textContent = 'Exam date must be after the start date.';
+        valid = false;
+      }
+      if (selectedDays.size === 0){
+        errDays.textContent = 'Select at least one study day.';
+        valid = false;
+      }
+      if (!valid){ resultCard.classList.remove('show'); return; }
+
+      const sessionMin = Number(sessionLengthEl.value);
+      const difficultyMult = Number(difficultyEl.value);
+      const topics = parseTopics();
+      const sessionDates = generateSessionDates(start, exam, selectedDays);
+      const total = sessionDates.length;
+
+      if (total === 0){
+        errDays.textContent = 'No study sessions fall between your start and exam date with these days selected.';
+        resultCard.classList.remove('show');
+        return;
+      }
+
+      // ---------- Phase counts ----------
+      const baseLearn = Math.min(topics.length, total);
+      let remaining = total - baseLearn;
+
+      const mockCount = includeMock.checked && remaining > 0 ? 1 : 0;
+      remaining -= mockCount;
+
+      const reviewCount = includeReview.checked && remaining > 0 ? Math.max(1, Math.round(remaining * 0.30)) : 0;
+      remaining -= reviewCount;
+
+      const weakCount = includeWeak.checked && remaining > 0 ? Math.max(1, Math.round(remaining * 0.35)) : 0;
+      remaining -= weakCount;
+
+      const practiceCount = includePractice.checked && remaining > 0 ? remaining : 0;
+      remaining -= practiceCount;
+
+      const learnCount = baseLearn + Math.max(0, remaining);
+
+      // ---------- Topic weighting ----------
+      const weakTopics = topics.filter(t => t.confidence === 'weak');
+      const weakPool = (weakTopics.length ? weakTopics : topics);
+
+      const learnWeights = topics.map(t => CONF_SCORE[t.confidence] + PRIO_SCORE[t.priority]);
+      const learnAssignments = distributeItemsAcrossSlots(topics, learnCount, learnWeights);
+      const weakAssignments = distributeItemsAcrossSlots(weakPool, weakCount);
+
+      // ---------- Assign phases + topics chronologically ----------
+      const plan = [];
+      let learnIdx = 0, weakIdx = 0;
+      for (let i = 0; i < total; i++){
+        let phase, topic = null;
+        if (i < learnCount){
+          phase = 'Learn';
+          topic = learnAssignments[learnIdx]; learnIdx++;
+        } else if (i < learnCount + practiceCount){
+          phase = 'Practice';
+        } else if (i < learnCount + practiceCount + weakCount){
+          phase = 'Weak-Spot';
+          topic = weakAssignments[weakIdx]; weakIdx++;
+        } else if (i < learnCount + practiceCount + weakCount + reviewCount){
+          phase = 'Review';
+        } else {
+          phase = 'Mock';
+        }
+        plan.push({ date: sessionDates[i], phase, topic });
+      }
+
+      // ---------- Per-topic hours ----------
+      const topicHours = {};
+      topics.forEach(t => topicHours[t.name] = 0);
+      plan.forEach(s => {
+        if (s.topic) topicHours[s.topic.name] += sessionMin / 60;
+      });
+
+      // ---------- Readiness ----------
+      const learnPracticeHours = plan.filter(s => s.phase === 'Learn' || s.phase === 'Practice' || s.phase === 'Weak-Spot')
+                                      .length * sessionMin / 60;
+      const recommendedHours = topics.reduce((sum, t) => sum + BASELINE_HOURS[t.confidence] * difficultyMult, 0);
+      const readiness = Math.min(100, Math.round((learnPracticeHours / recommendedHours) * 100)) || 0;
+
+      lastPlan = {
+        total, sessionMin, topics, plan, topicHours, readiness,
+        learnCount, practiceCount, weakCount, reviewCount, mockCount,
+        totalHours: total * sessionMin / 60, daysLeft: Math.round((exam - start) / 86400000)
+      };
+      renderResult(lastPlan);
+    });
+
+    function renderResult(p){
+      resultCard.classList.add('show');
+      document.getElementById('resultDays').textContent = p.daysLeft;
+      document.getElementById('resultRecap').textContent =
+        `${p.total} sessions planned across ${p.topics.length} topics, totaling ${p.totalHours.toFixed(1)} hours.`;
+
+      const pill = document.getElementById('readinessPill');
+      pill.textContent = p.readiness + '% READY';
+      pill.className = 'readiness-pill ' + (p.readiness >= 80 ? 'ready-high' : p.readiness >= 50 ? 'ready-mid' : 'ready-low');
+      const stampColor = p.readiness >= 80 ? getComputedStyle(document.documentElement).getPropertyValue('--green')
+                        : p.readiness >= 50 ? getComputedStyle(document.documentElement).getPropertyValue('--amber')
+                        : getComputedStyle(document.documentElement).getPropertyValue('--red');
+      document.querySelector('.result-stamp').style.borderColor = stampColor;
+      document.querySelector('.result-stamp').style.color = stampColor;
+
+      document.getElementById('statLearn').textContent = p.learnCount;
+      document.getElementById('statPractice').textContent = p.practiceCount;
+      document.getElementById('statWeak').textContent = p.weakCount;
+      document.getElementById('statReview').textContent = p.reviewCount;
+
+      // Topic bars
+      const maxHours = Math.max(...Object.values(p.topicHours), 0.01);
+      const bars = document.getElementById('topicBars');
+      bars.innerHTML = '';
+      p.topics.forEach(t => {
+        const hrs = p.topicHours[t.name] || 0;
+        const pct = (hrs / maxHours) * 100;
+        const tagClass = t.confidence === 'weak' ? 'tag-weak' : t.confidence === 'strong' ? 'tag-strong' : 'tag-medium';
+        const row = document.createElement('div');
+        row.className = 'topic-bar-row';
+        row.innerHTML = `
+          <div class="topic-bar-head">
+            <b>${escapeHtml(t.name)}<span class="topic-tag ${tagClass}">${t.confidence}</span></b>
+            <span>${hrs.toFixed(1)}h</span>
+          </div>
+          <div class="topic-bar-bg"><div class="topic-bar-fill" style="width:${pct}%;"></div></div>
+        `;
+        bars.appendChild(row);
+      });
+
+      // Session list (cap display)
+      const list = document.getElementById('sessionList');
+      const moreEl = document.getElementById('sessionMore');
+      list.innerHTML = '';
+      const CAP = 14;
+      const shown = p.plan.slice(0, CAP);
+      const phaseMeta = {
+        'Learn': ['phase-learn', 'fa-book'],
+        'Practice': ['phase-practice', 'fa-pen'],
+        'Weak-Spot': ['phase-weak', 'fa-triangle-exclamation'],
+        'Review': ['phase-review', 'fa-rotate'],
+        'Mock': ['phase-mock', 'fa-clipboard-check']
+      };
+      shown.forEach(s => {
+        const [cls, icon] = phaseMeta[s.phase];
+        const dayName = DAY_NAMES[s.date.getDay()];
+        const dateLabel = s.date.toLocaleDateString(undefined, { month:'short', day:'numeric' });
+        const topicLabel = s.topic ? s.topic.name : (s.phase === 'Practice' ? 'Mixed practice' : s.phase === 'Review' ? 'Full review' : s.phase === 'Mock' ? 'Practice exam' : '');
+        const item = document.createElement('div');
+        item.className = 'session-item';
+        item.innerHTML = `
+          <div class="session-date">${dayName}<b>${dateLabel}</b></div>
+          <div class="session-info"><b>${escapeHtml(topicLabel)}</b><span>${p.sessionMin} min session</span></div>
+          <span class="session-phase ${cls}"><i class="fa-solid ${icon}"></i> ${s.phase}</span>
+        `;
+        list.appendChild(item);
+      });
+      moreEl.textContent = p.plan.length > CAP ? `+ ${p.plan.length - CAP} more sessions in your full plan` : '';
+
+      resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function planToText(){
+      if (!lastPlan) return '';
+      const p = lastPlan;
+      const lines = [`📅 Study Plan — ${p.daysLeft} days to go`, `${p.total} sessions · ${p.totalHours.toFixed(1)} hours total · ${p.readiness}% ready`, ''];
+      lines.push('Time per topic:');
+      p.topics.forEach(t => lines.push(`  ${t.name} (${t.confidence}/${t.priority}): ${(p.topicHours[t.name]||0).toFixed(1)}h`));
+      lines.push('');
+      lines.push('Sessions:');
+      p.plan.forEach(s => {
+        const d = s.date.toLocaleDateString(undefined, { month:'short', day:'numeric', weekday:'short' });
+        const topicLabel = s.topic ? s.topic.name : s.phase;
+        lines.push(`  ${d} — ${s.phase}: ${topicLabel}`);
+      });
+      return lines.join('\n');
+    }
+
+    const copyBtn = document.getElementById('copyBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function(){
+        if (!lastPlan) { showToast('Generate a plan first!', 'fa-triangle-exclamation'); return; }
+        navigator.clipboard.writeText(planToText())
+          .then(() => showToast('Plan copied to clipboard!'))
+          .catch(() => showToast('Could not copy plan.', 'fa-triangle-exclamation'));
+      });
+    }
+
+    const printBtn = document.getElementById('printBtn');
+    if (printBtn) {
+      printBtn.addEventListener('click', function(){
+        if (!lastPlan) { showToast('Generate a plan first!', 'fa-triangle-exclamation'); return; }
+        window.print();
+      });
+    }
+
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', async function(){
+        if (!lastPlan) { showToast('Generate a plan first!', 'fa-triangle-exclamation'); return; }
+        const text = planToText();
+        if (navigator.share){
+          try { await navigator.share({ title: 'My Study Plan', text }); showToast('Shared successfully!'); }
+          catch(e) { /* cancelled */ }
+        } else {
+          navigator.clipboard.writeText(text)
+            .then(() => showToast('Share not supported — copied instead!'))
+            .catch(() => showToast('Could not share or copy.', 'fa-triangle-exclamation'));
+        }
+      });
+    }
+  })();
+
+  // ============================================================
+  // 6) Attendance Calculator  (#attForm)
+  // ============================================================
+  (function () {
+    const form = document.getElementById('attForm');
+    if (!form) return; // not on this page
+
+    function currentPercent(a, h){ return h > 0 ? (a / h) * 100 : 0; }
+
+    function classesCanMiss(a, h, reqPct){
+      const r = reqPct / 100;
+      if (r <= 0) return null;
+      if (r >= 1) return 0;
+      const raw = (a / r) - h;
+      return Math.max(0, Math.floor(raw));
+    }
+
+    function classesNeeded(a, h, reqPct){
+      const r = reqPct / 100;
+      if (h === 0) return Math.ceil(r * 1000000) > 0 ? 1 : 0;
+      if (a / h >= r) return 0;
+      if (r >= 1) return Infinity;
+      const raw = ((r * h) - a) / (1 - r);
+      return Math.max(0, Math.ceil(raw));
+    }
+
+    function fmtPct(n){ return (Math.round(n * 100) / 100).toFixed(2) + '%'; }
+
+    const toast = document.getElementById('toast');
+    let toastTimer;
+    function showToast(msg, icon = "fa-circle-check"){
+      if (!toast) return;
+      clearTimeout(toastTimer);
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i> ${msg}`;
+      toast.classList.add('show');
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    const attendedEl = document.getElementById('attended');
+    const heldEl = document.getElementById('held');
+    const errAttended = document.getElementById('err-attended');
+    const errHeld = document.getElementById('err-held');
+    const errRequired = document.getElementById('err-required');
+    const requiredChips = document.querySelectorAll('#requiredChips .chip');
+    const customWrap = document.getElementById('customWrap');
+    const customRequiredEl = document.getElementById('customRequired');
+    const liveBadge = document.getElementById('liveBadge');
+    const resultCard = document.getElementById('resultCard');
+
+    const required = [
+      attendedEl, heldEl, errAttended, errHeld, errRequired,
+      customWrap, customRequiredEl, liveBadge, resultCard
+    ];
+    if (required.some(el => !el)) {
+      console.warn('Attendance calculator: one or more expected elements are missing on this page.');
       return;
     }
 
-    // ---------- Phase counts ----------
-    // Reserve enough Learn sessions to cover every topic at least once (capped by total sessions),
-    // THEN split whatever's left among mock/review/weak/practice/extra-learn. This is what
-    // guarantees the last topic(s) always get scheduled, regardless of topic count.
-    const baseLearn = Math.min(topics.length, total);
-    let remaining = total - baseLearn;
+    let requiredValue = 75;
 
-    const mockCount = includeMock.checked && remaining > 0 ? 1 : 0;
-    remaining -= mockCount;
-
-    const reviewCount = includeReview.checked && remaining > 0 ? Math.max(1, Math.round(remaining * 0.30)) : 0;
-    remaining -= reviewCount;
-
-    const weakCount = includeWeak.checked && remaining > 0 ? Math.max(1, Math.round(remaining * 0.35)) : 0;
-    remaining -= weakCount;
-
-    const practiceCount = includePractice.checked && remaining > 0 ? remaining : 0;
-    remaining -= practiceCount;
-
-    // Any sessions left over (e.g. toggles off) become extra Learn time
-    const learnCount = baseLearn + Math.max(0, remaining);
-
-    // ---------- Topic weighting ----------
-    const weakTopics = topics.filter(t => t.confidence === 'weak');
-    const weakPool = (weakTopics.length ? weakTopics : topics);
-
-    const learnWeights = topics.map(t => CONF_SCORE[t.confidence] + PRIO_SCORE[t.priority]);
-    const learnAssignments = distributeItemsAcrossSlots(topics, learnCount, learnWeights);
-    const weakAssignments = distributeItemsAcrossSlots(weakPool, weakCount);
-
-    // ---------- Assign phases + topics chronologically ----------
-    const plan = [];
-    let learnIdx = 0, weakIdx = 0;
-    for (let i = 0; i < total; i++){
-      let phase, topic = null;
-      if (i < learnCount){
-        phase = 'Learn';
-        topic = learnAssignments[learnIdx]; learnIdx++;
-      } else if (i < learnCount + practiceCount){
-        phase = 'Practice';
-      } else if (i < learnCount + practiceCount + weakCount){
-        phase = 'Weak-Spot';
-        topic = weakAssignments[weakIdx]; weakIdx++;
-      } else if (i < learnCount + practiceCount + weakCount + reviewCount){
-        phase = 'Review';
-      } else {
-        phase = 'Mock';
-      }
-      plan.push({ date: sessionDates[i], phase, topic });
-    }
-
-    // ---------- Per-topic hours ----------
-    const topicHours = {};
-    topics.forEach(t => topicHours[t.name] = 0);
-    plan.forEach(s => {
-      if (s.topic) topicHours[s.topic.name] += sessionMin / 60;
-    });
-
-    // ---------- Readiness ----------
-    const learnPracticeHours = plan.filter(s => s.phase === 'Learn' || s.phase === 'Practice' || s.phase === 'Weak-Spot')
-                                    .length * sessionMin / 60;
-    const recommendedHours = topics.reduce((sum, t) => sum + BASELINE_HOURS[t.confidence] * difficultyMult, 0);
-    const readiness = Math.min(100, Math.round((learnPracticeHours / recommendedHours) * 100)) || 0;
-
-    lastPlan = {
-      total, sessionMin, topics, plan, topicHours, readiness,
-      learnCount, practiceCount, weakCount, reviewCount, mockCount,
-      totalHours: total * sessionMin / 60, daysLeft: Math.round((exam - start) / 86400000)
-    };
-    renderResult(lastPlan);
-  });
-
-  function renderResult(p){
-    resultCard.classList.add('show');
-    document.getElementById('resultDays').textContent = p.daysLeft;
-    document.getElementById('resultRecap').textContent =
-      `${p.total} sessions planned across ${p.topics.length} topics, totaling ${p.totalHours.toFixed(1)} hours.`;
-
-    const pill = document.getElementById('readinessPill');
-    pill.textContent = p.readiness + '% READY';
-    pill.className = 'readiness-pill ' + (p.readiness >= 80 ? 'ready-high' : p.readiness >= 50 ? 'ready-mid' : 'ready-low');
-    const stampColor = p.readiness >= 80 ? getComputedStyle(document.documentElement).getPropertyValue('--green')
-                      : p.readiness >= 50 ? getComputedStyle(document.documentElement).getPropertyValue('--amber')
-                      : getComputedStyle(document.documentElement).getPropertyValue('--red');
-    document.querySelector('.result-stamp').style.borderColor = stampColor;
-    document.querySelector('.result-stamp').style.color = stampColor;
-
-    document.getElementById('statLearn').textContent = p.learnCount;
-    document.getElementById('statPractice').textContent = p.practiceCount;
-    document.getElementById('statWeak').textContent = p.weakCount;
-    document.getElementById('statReview').textContent = p.reviewCount;
-
-    // Topic bars
-    const maxHours = Math.max(...Object.values(p.topicHours), 0.01);
-    const bars = document.getElementById('topicBars');
-    bars.innerHTML = '';
-    p.topics.forEach(t => {
-      const hrs = p.topicHours[t.name] || 0;
-      const pct = (hrs / maxHours) * 100;
-      const tagClass = t.confidence === 'weak' ? 'tag-weak' : t.confidence === 'strong' ? 'tag-strong' : 'tag-medium';
-      const row = document.createElement('div');
-      row.className = 'topic-bar-row';
-      row.innerHTML = `
-        <div class="topic-bar-head">
-          <b>${escapeHtml(t.name)}<span class="topic-tag ${tagClass}">${t.confidence}</span></b>
-          <span>${hrs.toFixed(1)}h</span>
-        </div>
-        <div class="topic-bar-bg"><div class="topic-bar-fill" style="width:${pct}%;"></div></div>
-      `;
-      bars.appendChild(row);
-    });
-
-    // Session list (cap display)
-    const list = document.getElementById('sessionList');
-    const moreEl = document.getElementById('sessionMore');
-    list.innerHTML = '';
-    const CAP = 14;
-    const shown = p.plan.slice(0, CAP);
-    const phaseMeta = {
-      'Learn': ['phase-learn', 'fa-book'],
-      'Practice': ['phase-practice', 'fa-pen'],
-      'Weak-Spot': ['phase-weak', 'fa-triangle-exclamation'],
-      'Review': ['phase-review', 'fa-rotate'],
-      'Mock': ['phase-mock', 'fa-clipboard-check']
-    };
-    shown.forEach(s => {
-      const [cls, icon] = phaseMeta[s.phase];
-      const dayName = DAY_NAMES[s.date.getDay()];
-      const dateLabel = s.date.toLocaleDateString(undefined, { month:'short', day:'numeric' });
-      const topicLabel = s.topic ? s.topic.name : (s.phase === 'Practice' ? 'Mixed practice' : s.phase === 'Review' ? 'Full review' : s.phase === 'Mock' ? 'Practice exam' : '');
-      const item = document.createElement('div');
-      item.className = 'session-item';
-      item.innerHTML = `
-        <div class="session-date">${dayName}<b>${dateLabel}</b></div>
-        <div class="session-info"><b>${escapeHtml(topicLabel)}</b><span>${p.sessionMin} min session</span></div>
-        <span class="session-phase ${cls}"><i class="fa-solid ${icon}"></i> ${s.phase}</span>
-      `;
-      list.appendChild(item);
-    });
-    moreEl.textContent = p.plan.length > CAP ? `+ ${p.plan.length - CAP} more sessions in your full plan` : '';
-
-    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-
-  function planToText(){
-    if (!lastPlan) return '';
-    const p = lastPlan;
-    const lines = [`📅 Study Plan — ${p.daysLeft} days to go`, `${p.total} sessions · ${p.totalHours.toFixed(1)} hours total · ${p.readiness}% ready`, ''];
-    lines.push('Time per topic:');
-    p.topics.forEach(t => lines.push(`  ${t.name} (${t.confidence}/${t.priority}): ${(p.topicHours[t.name]||0).toFixed(1)}h`));
-    lines.push('');
-    lines.push('Sessions:');
-    p.plan.forEach(s => {
-      const d = s.date.toLocaleDateString(undefined, { month:'short', day:'numeric', weekday:'short' });
-      const topicLabel = s.topic ? s.topic.name : s.phase;
-      lines.push(`  ${d} — ${s.phase}: ${topicLabel}`);
-    });
-    return lines.join('\n');
-  }
-
-  document.getElementById('copyBtn').addEventListener('click', function(){
-    if (!lastPlan) { showToast('Generate a plan first!', 'fa-triangle-exclamation'); return; }
-    navigator.clipboard.writeText(planToText())
-      .then(() => showToast('Plan copied to clipboard!'))
-      .catch(() => showToast('Could not copy plan.', 'fa-triangle-exclamation'));
-  });
-
-  document.getElementById('printBtn').addEventListener('click', function(){
-    if (!lastPlan) { showToast('Generate a plan first!', 'fa-triangle-exclamation'); return; }
-    window.print();
-  });
-
-  document.getElementById('shareBtn').addEventListener('click', async function(){
-    if (!lastPlan) { showToast('Generate a plan first!', 'fa-triangle-exclamation'); return; }
-    const text = planToText();
-    if (navigator.share){
-      try { await navigator.share({ title: 'My Study Plan', text }); showToast('Shared successfully!'); }
-      catch(e) { /* cancelled */ }
-    } else {
-      navigator.clipboard.writeText(text)
-        .then(() => showToast('Share not supported — copied instead!'))
-        .catch(() => showToast('Could not share or copy.', 'fa-triangle-exclamation'));
-    }
-  });
-
-});
-//*****************************************Attendance Calculator************************************//
-// ============================================================
-  // Attendance Calculator  (#attForm)
-  // ============================================================
-  document.addEventListener('DOMContentLoaded', function(){
-  "use strict";
-
-  const form = document.getElementById('attForm');
-  if (!form) return; // not on this page
-
-  function currentPercent(a, h){ return h > 0 ? (a / h) * 100 : 0; }
-
-  function classesCanMiss(a, h, reqPct){
-    const r = reqPct / 100;
-    if (r <= 0) return null;
-    if (r >= 1) return 0;
-    const raw = (a / r) - h;
-    return Math.max(0, Math.floor(raw));
-  }
-
-  function classesNeeded(a, h, reqPct){
-    const r = reqPct / 100;
-    if (h === 0) return Math.ceil(r * 1000000) > 0 ? 1 : 0;
-    if (a / h >= r) return 0;
-    if (r >= 1) return Infinity;
-    const raw = ((r * h) - a) / (1 - r);
-    return Math.max(0, Math.ceil(raw));
-  }
-
-  function fmtPct(n){ return (Math.round(n * 100) / 100).toFixed(2) + '%'; }
-
-  const toast = document.getElementById('toast');
-  let toastTimer;
-  function showToast(msg, icon = "fa-circle-check"){
-    if (!toast) return;
-    clearTimeout(toastTimer);
-    toast.innerHTML = `<i class="fa-solid ${icon}"></i> ${msg}`;
-    toast.classList.add('show');
-    toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
-  }
-
-  const attendedEl = document.getElementById('attended');
-  const heldEl = document.getElementById('held');
-  const errAttended = document.getElementById('err-attended');
-  const errHeld = document.getElementById('err-held');
-  const errRequired = document.getElementById('err-required');
-  const requiredChips = document.querySelectorAll('#requiredChips .chip');
-  const customWrap = document.getElementById('customWrap');
-  const customRequiredEl = document.getElementById('customRequired');
-  const liveBadge = document.getElementById('liveBadge');
-  const resultCard = document.getElementById('resultCard');
-
-  const required = [
-    attendedEl, heldEl, errAttended, errHeld, errRequired,
-    customWrap, customRequiredEl, liveBadge, resultCard
-  ];
-  if (required.some(el => !el)) {
-    console.warn('Attendance calculator: one or more expected elements are missing on this page.');
-    return;
-  }
-
-  let requiredValue = 75;
-
-  requiredChips.forEach(chip => {
-    chip.addEventListener('click', function(){
-      requiredChips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      if (chip.dataset.val === 'custom'){
-        customWrap.classList.add('show');
-        requiredValue = Number(customRequiredEl.value) || 75;
-      } else {
-        customWrap.classList.remove('show');
-        requiredValue = Number(chip.dataset.val);
-      }
-    });
-  });
-  customRequiredEl.addEventListener('input', function(){
-    requiredValue = Number(customRequiredEl.value) || requiredValue;
-  });
-
-  function updateLiveBadge(){
-    const a = Number(attendedEl.value);
-    const h = Number(heldEl.value);
-    if (attendedEl.value !== '' && heldEl.value !== '' && h > 0 && a >= 0){
-      liveBadge.textContent = fmtPct(currentPercent(a, h));
-    } else {
-      liveBadge.textContent = '--%';
-    }
-  }
-  [attendedEl, heldEl].forEach(el => el.addEventListener('input', updateLiveBadge));
-
-  function validateMain(){
-    errAttended.textContent = ''; errHeld.textContent = ''; errRequired.textContent = '';
-    [attendedEl, heldEl].forEach(el => el.style.borderColor = '');
-    const a = Number(attendedEl.value);
-    const h = Number(heldEl.value);
-    let valid = true;
-
-    if (attendedEl.value === '' || isNaN(a) || a < 0){
-      attendedEl.style.borderColor = 'var(--red)'; errAttended.textContent = 'Enter classes attended (0 or more).'; valid = false;
-    }
-    if (heldEl.value === '' || isNaN(h) || h <= 0){
-      heldEl.style.borderColor = 'var(--red)'; errHeld.textContent = 'Enter total classes held (more than 0).'; valid = false;
-    }
-    if (valid && a > h){
-      attendedEl.style.borderColor = 'var(--red)'; errAttended.textContent = "Attended can't exceed classes held."; valid = false;
-    }
-    if (requiredValue <= 0 || requiredValue > 100 || isNaN(requiredValue)){
-      errRequired.textContent = 'Choose a required percentage between 1 and 100.'; valid = false;
-    }
-    return valid ? { a, h } : null;
-  }
-
-  let lastResult = null;
-
-  form.addEventListener('submit', function(e){
-    e.preventDefault();
-    const data = validateMain();
-    if (!data){ resultCard.classList.remove('show'); return; }
-    const { a, h } = data;
-    const pct = currentPercent(a, h);
-    const pass = pct >= requiredValue;
-    const miss = pass ? classesCanMiss(a, h, requiredValue) : 0;
-    const need = pass ? 0 : classesNeeded(a, h, requiredValue);
-
-    lastResult = { a, h, pct, requiredValue, pass, miss, need };
-    renderResult(lastResult);
-  });
-
-  function renderResult(r){
-    resultCard.classList.add('show');
-    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    setText('resultPct', r.pct.toFixed(2) + '%');
-
-    const stamp = document.querySelector('.result-stamp');
-    const pill = document.getElementById('statusPill');
-    if (r.pass){
-      if (stamp) { stamp.style.borderColor = 'var(--green)'; stamp.style.color = 'var(--green)'; }
-      if (pill) { pill.textContent = `ABOVE ${r.requiredValue}% REQUIRED`; pill.className = 'status-pill status-pass'; }
-    } else {
-      if (stamp) { stamp.style.borderColor = 'var(--red)'; stamp.style.color = 'var(--red)'; }
-      if (pill) { pill.textContent = `BELOW ${r.requiredValue}% REQUIRED`; pill.className = 'status-pill status-fail'; }
-    }
-
-    setText('statAttended', r.a);
-    setText('statHeld', r.h);
-    setText('statRequired', r.requiredValue + '%');
-    setText('statCurrent', r.pct.toFixed(2) + '%');
-    setText('statMiss', Number.isFinite(r.miss) ? r.miss : '—');
-    setText('statNeed', Number.isFinite(r.need) ? r.need : '—');
-
-    const callout = document.getElementById('improveCallout');
-    if (callout) {
-      if (!r.pass){
-        callout.classList.add('show');
-        if (Number.isFinite(r.need)){
-          callout.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> You're currently at <b>${r.pct.toFixed(2)}%</b>, below the <b>${r.requiredValue}%</b> requirement. Attend the next <b>${r.need}</b> consecutive classes to bring your attendance back up to ${r.requiredValue}%.`;
+    requiredChips.forEach(chip => {
+      chip.addEventListener('click', function(){
+        requiredChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        if (chip.dataset.val === 'custom'){
+          customWrap.classList.add('show');
+          requiredValue = Number(customRequiredEl.value) || 75;
         } else {
-          callout.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> At a ${r.requiredValue}% requirement with your current numbers, this target isn't mathematically reachable by attending future classes alone — talk to your instructor about your options.`;
+          customWrap.classList.remove('show');
+          requiredValue = Number(chip.dataset.val);
         }
+      });
+    });
+    customRequiredEl.addEventListener('input', function(){
+      requiredValue = Number(customRequiredEl.value) || requiredValue;
+    });
+
+    function updateLiveBadge(){
+      const a = Number(attendedEl.value);
+      const h = Number(heldEl.value);
+      if (attendedEl.value !== '' && heldEl.value !== '' && h > 0 && a >= 0){
+        liveBadge.textContent = fmtPct(currentPercent(a, h));
       } else {
-        callout.classList.remove('show');
+        liveBadge.textContent = '--%';
       }
     }
+    [attendedEl, heldEl].forEach(el => el.addEventListener('input', updateLiveBadge));
 
-    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
+    function validateMain(){
+      errAttended.textContent = ''; errHeld.textContent = ''; errRequired.textContent = '';
+      [attendedEl, heldEl].forEach(el => el.style.borderColor = '');
+      const a = Number(attendedEl.value);
+      const h = Number(heldEl.value);
+      let valid = true;
 
-  function resultToText(){
-    if (!lastResult) return '';
-    const r = lastResult;
-    return `📋 Attendance Result
+      if (attendedEl.value === '' || isNaN(a) || a < 0){
+        attendedEl.style.borderColor = 'var(--red)'; errAttended.textContent = 'Enter classes attended (0 or more).'; valid = false;
+      }
+      if (heldEl.value === '' || isNaN(h) || h <= 0){
+        heldEl.style.borderColor = 'var(--red)'; errHeld.textContent = 'Enter total classes held (more than 0).'; valid = false;
+      }
+      if (valid && a > h){
+        attendedEl.style.borderColor = 'var(--red)'; errAttended.textContent = "Attended can't exceed classes held."; valid = false;
+      }
+      if (requiredValue <= 0 || requiredValue > 100 || isNaN(requiredValue)){
+        errRequired.textContent = 'Choose a required percentage between 1 and 100.'; valid = false;
+      }
+      return valid ? { a, h } : null;
+    }
+
+    let lastResult = null;
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const data = validateMain();
+      if (!data){ resultCard.classList.remove('show'); return; }
+      const { a, h } = data;
+      const pct = currentPercent(a, h);
+      const pass = pct >= requiredValue;
+      const miss = pass ? classesCanMiss(a, h, requiredValue) : 0;
+      const need = pass ? 0 : classesNeeded(a, h, requiredValue);
+
+      lastResult = { a, h, pct, requiredValue, pass, miss, need };
+      renderResult(lastResult);
+    });
+
+    function renderResult(r){
+      resultCard.classList.add('show');
+      const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      setText('resultPct', r.pct.toFixed(2) + '%');
+
+      const stamp = document.querySelector('.result-stamp');
+      const pill = document.getElementById('statusPill');
+      if (r.pass){
+        if (stamp) { stamp.style.borderColor = 'var(--green)'; stamp.style.color = 'var(--green)'; }
+        if (pill) { pill.textContent = `ABOVE ${r.requiredValue}% REQUIRED`; pill.className = 'status-pill status-pass'; }
+      } else {
+        if (stamp) { stamp.style.borderColor = 'var(--red)'; stamp.style.color = 'var(--red)'; }
+        if (pill) { pill.textContent = `BELOW ${r.requiredValue}% REQUIRED`; pill.className = 'status-pill status-fail'; }
+      }
+
+      setText('statAttended', r.a);
+      setText('statHeld', r.h);
+      setText('statRequired', r.requiredValue + '%');
+      setText('statCurrent', r.pct.toFixed(2) + '%');
+      setText('statMiss', Number.isFinite(r.miss) ? r.miss : '—');
+      setText('statNeed', Number.isFinite(r.need) ? r.need : '—');
+
+      const callout = document.getElementById('improveCallout');
+      if (callout) {
+        if (!r.pass){
+          callout.classList.add('show');
+          if (Number.isFinite(r.need)){
+            callout.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> You're currently at <b>${r.pct.toFixed(2)}%</b>, below the <b>${r.requiredValue}%</b> requirement. Attend the next <b>${r.need}</b> consecutive classes to bring your attendance back up to ${r.requiredValue}%.`;
+          } else {
+            callout.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> At a ${r.requiredValue}% requirement with your current numbers, this target isn't mathematically reachable by attending future classes alone — talk to your instructor about your options.`;
+          }
+        } else {
+          callout.classList.remove('show');
+        }
+      }
+
+      resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function resultToText(){
+      if (!lastResult) return '';
+      const r = lastResult;
+      return `📋 Attendance Result
 Classes Attended: ${r.a}
 Classes Held: ${r.h}
 Current Attendance: ${r.pct.toFixed(2)}%
@@ -1577,157 +1598,158 @@ Required Attendance: ${r.requiredValue}%
 Status: ${r.pass ? 'Above requirement' : 'Below requirement'}
 Classes You Can Miss: ${Number.isFinite(r.miss) ? r.miss : 'N/A'}
 Classes Needed to Reach Target: ${Number.isFinite(r.need) ? r.need : 'Not reachable'}`;
-  }
+    }
 
-  const copyBtn = document.getElementById('copyBtn');
-  if (copyBtn) {
-    copyBtn.addEventListener('click', function(){
-      if (!lastResult) { showToast('Calculate first!', 'fa-triangle-exclamation'); return; }
-      navigator.clipboard.writeText(resultToText())
-        .then(() => showToast('Result copied to clipboard!'))
-        .catch(() => showToast('Could not copy result.', 'fa-triangle-exclamation'));
-    });
-  }
-  const printBtn = document.getElementById('printBtn');
-  if (printBtn) {
-    printBtn.addEventListener('click', function(){
-      if (!lastResult) { showToast('Calculate first!', 'fa-triangle-exclamation'); return; }
-      window.print();
-    });
-  }
-  const shareBtn = document.getElementById('shareBtn');
-  if (shareBtn) {
-    shareBtn.addEventListener('click', async function(){
-      if (!lastResult) { showToast('Calculate first!', 'fa-triangle-exclamation'); return; }
-      const text = resultToText();
-      if (navigator.share){
-        try { await navigator.share({ title: 'My Attendance Result', text }); showToast('Shared successfully!'); }
-        catch(e){ /* cancelled */ }
-      } else {
-        navigator.clipboard.writeText(text)
-          .then(() => showToast('Share not supported — copied instead!'))
-          .catch(() => showToast('Could not share or copy.', 'fa-triangle-exclamation'));
-      }
-    });
-  }
-
-  // ---------- Stretch goal ----------
-  const stretchChips = document.querySelectorAll('#stretchChips .chip');
-  const stretchCustomWrap = document.getElementById('stretchCustomWrap');
-  const stretchCustomEl = document.getElementById('stretchCustomRequired');
-  const stretchResult = document.getElementById('stretchResult');
-  const stretchBtn = document.getElementById('stretchBtn');
-  let stretchValue = 80;
-
-  if (stretchCustomWrap && stretchCustomEl && stretchResult && stretchBtn) {
-    stretchChips.forEach(chip => {
-      chip.addEventListener('click', function(){
-        stretchChips.forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        if (chip.dataset.val === 'custom'){
-          stretchCustomWrap.classList.add('show');
-          stretchValue = Number(stretchCustomEl.value) || 80;
+    const copyBtn = document.getElementById('copyBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function(){
+        if (!lastResult) { showToast('Calculate first!', 'fa-triangle-exclamation'); return; }
+        navigator.clipboard.writeText(resultToText())
+          .then(() => showToast('Result copied to clipboard!'))
+          .catch(() => showToast('Could not copy result.', 'fa-triangle-exclamation'));
+      });
+    }
+    const printBtn = document.getElementById('printBtn');
+    if (printBtn) {
+      printBtn.addEventListener('click', function(){
+        if (!lastResult) { showToast('Calculate first!', 'fa-triangle-exclamation'); return; }
+        window.print();
+      });
+    }
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', async function(){
+        if (!lastResult) { showToast('Calculate first!', 'fa-triangle-exclamation'); return; }
+        const text = resultToText();
+        if (navigator.share){
+          try { await navigator.share({ title: 'My Attendance Result', text }); showToast('Shared successfully!'); }
+          catch(e){ /* cancelled */ }
         } else {
-          stretchCustomWrap.classList.remove('show');
-          stretchValue = Number(chip.dataset.val);
+          navigator.clipboard.writeText(text)
+            .then(() => showToast('Share not supported — copied instead!'))
+            .catch(() => showToast('Could not share or copy.', 'fa-triangle-exclamation'));
         }
       });
-    });
-    stretchCustomEl.addEventListener('input', function(){
-      stretchValue = Number(stretchCustomEl.value) || stretchValue;
-    });
+    }
 
-    stretchBtn.addEventListener('click', function(){
-      const a = Number(attendedEl.value);
-      const h = Number(heldEl.value);
-      if (attendedEl.value === '' || heldEl.value === '' || h <= 0 || a < 0 || a > h){
-        showToast('Enter valid Classes Attended / Held above first.', 'fa-triangle-exclamation');
-        return;
-      }
-      const pct = currentPercent(a, h);
-      const pass = pct >= stretchValue;
-      stretchResult.classList.add('show');
-      if (pass){
-        const miss = classesCanMiss(a, h, stretchValue);
-        stretchResult.innerHTML = `At <b>${pct.toFixed(2)}%</b>, you're already above <b>${stretchValue}%</b>. You could still miss up to <b>${Number.isFinite(miss) ? miss : 0}</b> future classes and stay at or above ${stretchValue}%.`;
-      } else {
-        const need = classesNeeded(a, h, stretchValue);
-        stretchResult.innerHTML = Number.isFinite(need)
-          ? `At <b>${pct.toFixed(2)}%</b>, you're below <b>${stretchValue}%</b>. Attend the next <b>${need}</b> consecutive classes to reach ${stretchValue}%.`
-          : `At <b>${pct.toFixed(2)}%</b>, reaching <b>${stretchValue}%</b> isn't mathematically possible through future attendance alone.`;
-      }
-    });
-  }
+    // ---------- Stretch goal ----------
+    const stretchChips = document.querySelectorAll('#stretchChips .chip');
+    const stretchCustomWrap = document.getElementById('stretchCustomWrap');
+    const stretchCustomEl = document.getElementById('stretchCustomRequired');
+    const stretchResult = document.getElementById('stretchResult');
+    const stretchBtn = document.getElementById('stretchBtn');
+    let stretchValue = 80;
 
-  // ---------- What-If calculator ----------
-  const modeBtns = document.querySelectorAll('.mode-btn');
-  const wfAttend = document.getElementById('wf-attend');
-  const wfMiss = document.getElementById('wf-miss');
-  const wfRatio = document.getElementById('wf-ratio');
-  const whatifBtn = document.getElementById('whatifBtn');
-  const whatifResult = document.getElementById('whatifResult');
-
-  if (modeBtns.length && wfAttend && wfMiss && wfRatio && whatifBtn && whatifResult) {
-    const wfSections = { attend: wfAttend, miss: wfMiss, ratio: wfRatio };
-    let wfMode = 'attend';
-
-    modeBtns.forEach(btn => {
-      btn.addEventListener('click', function(){
-        modeBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        wfMode = btn.dataset.mode;
-        Object.keys(wfSections).forEach(k => wfSections[k].classList.toggle('show', k === wfMode));
-        whatifResult.classList.remove('show');
+    if (stretchCustomWrap && stretchCustomEl && stretchResult && stretchBtn) {
+      stretchChips.forEach(chip => {
+        chip.addEventListener('click', function(){
+          stretchChips.forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          if (chip.dataset.val === 'custom'){
+            stretchCustomWrap.classList.add('show');
+            stretchValue = Number(stretchCustomEl.value) || 80;
+          } else {
+            stretchCustomWrap.classList.remove('show');
+            stretchValue = Number(chip.dataset.val);
+          }
+        });
       });
-    });
+      stretchCustomEl.addEventListener('input', function(){
+        stretchValue = Number(stretchCustomEl.value) || stretchValue;
+      });
 
-    whatifBtn.addEventListener('click', function(){
-      const a = Number(attendedEl.value);
-      const h = Number(heldEl.value);
-      if (attendedEl.value === '' || heldEl.value === '' || h <= 0 || a < 0 || a > h){
-        showToast('Enter valid Classes Attended / Held above first.', 'fa-triangle-exclamation');
-        return;
-      }
-      const beforePct = currentPercent(a, h);
-      let newA = a, newH = h;
-      const errRatio = document.getElementById('err-ratio');
-      if (errRatio) errRatio.textContent = '';
+      stretchBtn.addEventListener('click', function(){
+        const a = Number(attendedEl.value);
+        const h = Number(heldEl.value);
+        if (attendedEl.value === '' || heldEl.value === '' || h <= 0 || a < 0 || a > h){
+          showToast('Enter valid Classes Attended / Held above first.', 'fa-triangle-exclamation');
+          return;
+        }
+        const pct = currentPercent(a, h);
+        const pass = pct >= stretchValue;
+        stretchResult.classList.add('show');
+        if (pass){
+          const miss = classesCanMiss(a, h, stretchValue);
+          stretchResult.innerHTML = `At <b>${pct.toFixed(2)}%</b>, you're already above <b>${stretchValue}%</b>. You could still miss up to <b>${Number.isFinite(miss) ? miss : 0}</b> future classes and stay at or above ${stretchValue}%.`;
+        } else {
+          const need = classesNeeded(a, h, stretchValue);
+          stretchResult.innerHTML = Number.isFinite(need)
+            ? `At <b>${pct.toFixed(2)}%</b>, you're below <b>${stretchValue}%</b>. Attend the next <b>${need}</b> consecutive classes to reach ${stretchValue}%.`
+            : `At <b>${pct.toFixed(2)}%</b>, reaching <b>${stretchValue}%</b> isn't mathematically possible through future attendance alone.`;
+        }
+      });
+    }
 
-      if (wfMode === 'attend'){
-        const el = document.getElementById('wfAttendN');
-        const n = Number(el ? el.value : NaN);
-        if (isNaN(n) || n < 0){ showToast("Enter how many classes you'll attend.", 'fa-triangle-exclamation'); return; }
-        newA = a + n; newH = h + n;
-      } else if (wfMode === 'miss'){
-        const el = document.getElementById('wfMissN');
-        const n = Number(el ? el.value : NaN);
-        if (isNaN(n) || n < 0){ showToast("Enter how many classes you'll miss.", 'fa-triangle-exclamation'); return; }
-        newA = a; newH = h + n;
-      } else {
-        const xEl = document.getElementById('wfRatioX');
-        const yEl = document.getElementById('wfRatioY');
-        const x = Number(xEl ? xEl.value : NaN);
-        const y = Number(yEl ? yEl.value : NaN);
-        if (isNaN(x) || isNaN(y) || y <= 0 || x < 0){ showToast('Enter valid attend/next values.', 'fa-triangle-exclamation'); return; }
-        if (x > y){ if (errRatio) errRatio.textContent = "Classes attended can't exceed classes in that range."; return; }
-        newA = a + x; newH = h + y;
-      }
+    // ---------- What-If calculator ----------
+    const modeBtns = document.querySelectorAll('.mode-btn');
+    const wfAttend = document.getElementById('wf-attend');
+    const wfMiss = document.getElementById('wf-miss');
+    const wfRatio = document.getElementById('wf-ratio');
+    const whatifBtn = document.getElementById('whatifBtn');
+    const whatifResult = document.getElementById('whatifResult');
 
-      const afterPct = currentPercent(newA, newH);
-      const wfBefore = document.getElementById('wfBefore');
-      const wfAfter = document.getElementById('wfAfter');
-      if (wfBefore) wfBefore.textContent = beforePct.toFixed(2) + '%';
-      if (wfAfter) wfAfter.textContent = afterPct.toFixed(2) + '%';
+    if (modeBtns.length && wfAttend && wfMiss && wfRatio && whatifBtn && whatifResult) {
+      const wfSections = { attend: wfAttend, miss: wfMiss, ratio: wfRatio };
+      let wfMode = 'attend';
 
-      const pill = document.getElementById('wfPill');
-      const pass = afterPct >= requiredValue;
-      if (pill) {
-        pill.textContent = pass ? `MEETS ${requiredValue}% REQUIRED` : `BELOW ${requiredValue}% REQUIRED`;
-        pill.className = 'status-pill ' + (pass ? 'status-pass' : 'status-fail');
-      }
+      modeBtns.forEach(btn => {
+        btn.addEventListener('click', function(){
+          modeBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          wfMode = btn.dataset.mode;
+          Object.keys(wfSections).forEach(k => wfSections[k].classList.toggle('show', k === wfMode));
+          whatifResult.classList.remove('show');
+        });
+      });
 
-      whatifResult.classList.add('show');
-    });
-  }
+      whatifBtn.addEventListener('click', function(){
+        const a = Number(attendedEl.value);
+        const h = Number(heldEl.value);
+        if (attendedEl.value === '' || heldEl.value === '' || h <= 0 || a < 0 || a > h){
+          showToast('Enter valid Classes Attended / Held above first.', 'fa-triangle-exclamation');
+          return;
+        }
+        const beforePct = currentPercent(a, h);
+        let newA = a, newH = h;
+        const errRatio = document.getElementById('err-ratio');
+        if (errRatio) errRatio.textContent = '';
+
+        if (wfMode === 'attend'){
+          const el = document.getElementById('wfAttendN');
+          const n = Number(el ? el.value : NaN);
+          if (isNaN(n) || n < 0){ showToast("Enter how many classes you'll attend.", 'fa-triangle-exclamation'); return; }
+          newA = a + n; newH = h + n;
+        } else if (wfMode === 'miss'){
+          const el = document.getElementById('wfMissN');
+          const n = Number(el ? el.value : NaN);
+          if (isNaN(n) || n < 0){ showToast("Enter how many classes you'll miss.", 'fa-triangle-exclamation'); return; }
+          newA = a; newH = h + n;
+        } else {
+          const xEl = document.getElementById('wfRatioX');
+          const yEl = document.getElementById('wfRatioY');
+          const x = Number(xEl ? xEl.value : NaN);
+          const y = Number(yEl ? yEl.value : NaN);
+          if (isNaN(x) || isNaN(y) || y <= 0 || x < 0){ showToast('Enter valid attend/next values.', 'fa-triangle-exclamation'); return; }
+          if (x > y){ if (errRatio) errRatio.textContent = "Classes attended can't exceed classes in that range."; return; }
+          newA = a + x; newH = h + y;
+        }
+
+        const afterPct = currentPercent(newA, newH);
+        const wfBefore = document.getElementById('wfBefore');
+        const wfAfter = document.getElementById('wfAfter');
+        if (wfBefore) wfBefore.textContent = beforePct.toFixed(2) + '%';
+        if (wfAfter) wfAfter.textContent = afterPct.toFixed(2) + '%';
+
+        const pill = document.getElementById('wfPill');
+        const pass = afterPct >= requiredValue;
+        if (pill) {
+          pill.textContent = pass ? `MEETS ${requiredValue}% REQUIRED` : `BELOW ${requiredValue}% REQUIRED`;
+          pill.className = 'status-pill ' + (pass ? 'status-pass' : 'status-fail');
+        }
+
+        whatifResult.classList.add('show');
+      });
+    }
+  })();
 
 });

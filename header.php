@@ -25,19 +25,6 @@
 <?php wp_head(); ?>
 </head>
 <body>
-<!--header class="site">
-  <nav class="bar">
-    <a href="#top" class="logo"><span class="mark">A+</span> Scorebook</a>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="#tools">Tools</a></li>
-      <li><a href="#how">How it works</a></li>
-      <li><a href="calculator.html#basic">Grade Calculator</a></li>
-      <li><a href="calculator.html#cgpa">CGPA</a></li>
-      <li><a href="calculator.html" class="nav-cta">Open Calculator</a></li>
-    </ul>
-    <button class="burger" id="burger" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
-  </nav>
-</header-->
 <header class="site">
   <nav class="bar">
     <a href="<?php echo esc_url(home_url('/')); ?>" class="logo">
