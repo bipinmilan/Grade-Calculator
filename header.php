@@ -25,28 +25,37 @@
 <?php wp_head(); ?>
 </head>
 <body>
-<header class="site">
+<!--header class="site">
   <nav class="bar">
     <a href="#top" class="logo"><span class="mark">A+</span> Scorebook</a>
     <ul class="nav-links" id="navLinks">
-      <!--li><a href="#tools">Tools</a></li>
+      <li><a href="#tools">Tools</a></li>
       <li><a href="#how">How it works</a></li>
       <li><a href="calculator.html#basic">Grade Calculator</a></li>
       <li><a href="calculator.html#cgpa">CGPA</a></li>
-      <li><a href="calculator.html" class="nav-cta">Open Calculator</a></li-->
-    <!--/ul-->
+      <li><a href="calculator.html" class="nav-cta">Open Calculator</a></li>
+    </ul>
+    <button class="burger" id="burger" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
+  </nav>
+</header-->
+<header class="site">
+  <nav class="bar">
+    <a href="<?php echo esc_url(home_url('/')); ?>" class="logo">
+      <span class="mark">A+</span> <?php bloginfo('name'); ?>
+    </a>
+
     <?php
-            wp_nav_menu(array(
-                'theme_location' => 'main-menu',
-                'container' => false,
-                'menu_class' => 'navbar-nav ms-auto gap-3',
-                'fallback_cb' => '__return_false',
-                'items_wrap' => '<ul id="%1$s" class="navbar-nav me-auto mb-2 mb-md-0 %2$s">%3$s</ul>',
-                'depth' => 2,
-                'walker' => new bootstrap_5_wp_nav_menu_walker()
-            ));
-            ?>
-          </ul>
+    wp_nav_menu([
+        'theme_location' => 'primary',
+        'menu_id'        => 'navLinks',
+        'menu_class'     => 'nav-links',
+        'container'      => false,
+        'walker'         => new Scorebook_Walker_Nav_Menu(),
+        'fallback_cb'    => false,
+        'items_wrap'     => '<ul id="%1$s" class="%2$s">%3$s</ul>',
+    ]);
+    ?>
+
     <button class="burger" id="burger" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
   </nav>
 </header>

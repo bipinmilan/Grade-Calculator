@@ -47,10 +47,11 @@ function grade_calculator_setup() {
 	add_theme_support( 'post-thumbnails' );
 
 	// This theme uses wp_nav_menu() in one location.
-	register_nav_menus(
-		array(
-			'primary' => __( 'Primary Menu', 'Grade Calculator' ),
-		));
+	add_action('after_setup_theme', function() {
+    register_nav_menus([
+        'primary' => __('Primary Menu', 'scorebook'),
+    	]);
+	});
 	/*
 		* Switch default core markup for search form, comment form, and comments
 		* to output valid HTML5.
@@ -144,7 +145,7 @@ add_action( 'after_setup_theme', 'register_navwalker' );
 function grade_calculator_scripts() {
 	wp_enqueue_style( 'grade-calculator-style', get_stylesheet_uri(), array(), _S_VERSION );
 	wp_style_add_data( 'grade-calculator-style', 'rtl', 'replace' );
-	wp_enqueue_script( 'littlekrishna-navigation', get_template_directory_uri() . '/js/script.js', ['jquery'], array(), '1.0.0', true );
+	wp_enqueue_script( 'grade_calculator_scripts', get_template_directory_uri() . '/js/script.js', ['jquery'], array(), '1.0.0', true );
 	wp_enqueue_script( 'grade-calculator-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
 
 	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {

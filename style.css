@@ -208,6 +208,82 @@ Nicolas Gallagher and Jonathan Neal https://necolas.github.io/normalize.css/
 
 
   /* ---------- Nav ---------- */
+  /* Replaces / extends old ".nav-links a" rules to match the walker's markup */
+.nav-links li{position:relative;}
+.nav-links .nav-link{
+  font-size:.92rem; font-weight:500; color:var(--ink-soft); padding:4px 0;
+  display:inline-block; text-decoration:none;
+}
+.nav-links .nav-link:hover{color:var(--ink);}
+.nav-links .nav-cta.nav-link{
+  background:var(--ink); color:#fff !important; padding:10px 18px; border-radius:10px; font-weight:600; font-size:.88rem;
+}
+.nav-links .nav-cta.nav-link:hover{background:var(--red);}
+
+/* WordPress marks the active page's <li> with this class automatically */
+.nav-links li.current-menu-item > .nav-link{color:var(--ink); font-weight:700;}
+
+   /* Static chevron next to the link text — desktop only */
+/* Static dropdown indicator next to the link text itself — shows on both
+   desktop and mobile, so a parent item like "Tools" is recognizable as
+   having a submenu even before hovering or tapping. */
+li.has-submenu > .nav-link::after{
+  content: "\f078"; /* Font Awesome chevron-down */
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: .6rem;
+  margin-left: 6px;
+  color: var(--ink-faint);
+  display: inline-block;
+  vertical-align: 2px;
+  transition: transform .2s ease, color .2s ease;
+}
+li.has-submenu:hover > .nav-link::after,
+li.has-submenu.submenu-open > .nav-link::after{
+  color: var(--coral); /* swap for whichever accent color this page uses */
+  transform: rotate(180deg);
+}
+
+/* Mobile keeps only the tappable .submenu-toggle button as the indicator */
+@media (max-width:900px){
+  li.has-submenu > .nav-link::after{
+    content: none;
+  }
+}
+
+/* Submenu support (only matters if any menu item has children in wp-admin) */
+.submenu-toggle{
+  background:none; border:none; color:var(--ink-soft); font-size:.7rem; cursor:pointer;
+  padding:4px 6px; margin-left:4px; transition:transform .2s ease;
+}
+li.has-submenu.submenu-open > .submenu-toggle{transform:rotate(180deg);}
+.submenu{
+  list-style:none; margin:0; padding:0;
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  box-shadow:var(--shadow); min-width:180px; padding:6px;
+}
+.submenu .nav-link{display:block; padding:9px 12px; border-radius:8px; font-size:.86rem;}
+.submenu .nav-link:hover{background:var(--paper);}
+
+@media (min-width:901px){
+  li.has-submenu{position:relative;}
+  li.has-submenu .submenu{
+    position:absolute; top:calc(100% + 10px); left:0; z-index:60;
+    opacity:0; visibility:hidden; transform:translateY(6px);
+    transition:opacity .18s ease, transform .18s ease, visibility .18s ease;
+  }
+  li.has-submenu:hover .submenu,
+  li.has-submenu.submenu-open .submenu{opacity:1; visibility:visible; transform:translateY(0);}
+  .submenu-toggle{display:none;} /* hover handles it on desktop */
+}
+
+@media (max-width:900px){
+  .submenu{
+    box-shadow:none; border:none; background:var(--paper); margin:4px 0 4px 12px;
+    max-height:0; overflow:hidden; padding:0;
+  }
+  li.has-submenu.submenu-open .submenu{max-height:400px; padding:6px;}
+}
   header.site{
     position:sticky; top:0; z-index:50;
     background:rgba(238,241,246,0.86);
@@ -231,7 +307,7 @@ Nicolas Gallagher and Jonathan Neal https://necolas.github.io/normalize.css/
     transform:rotate(-8deg);
   }
   .nav-links{display:flex; align-items:center; gap:30px;}
-  .nav-links a{
+  /*.nav-links a{
     font-size:.92rem; font-weight:500; color:var(--ink-soft);
     position:relative; padding:4px 0;
   }
@@ -239,7 +315,7 @@ Nicolas Gallagher and Jonathan Neal https://necolas.github.io/normalize.css/
   .nav-cta{
     background:var(--ink); color:#fff !important;
     padding:10px 18px; border-radius:10px; font-weight:600; font-size:.88rem;
-  }
+  }*/
   .nav-cta:hover{background:var(--red);}
   .burger{
     display:none; background:none; border:none; font-size:1.3rem; color:var(--ink); cursor:pointer;
@@ -252,7 +328,7 @@ Nicolas Gallagher and Jonathan Neal https://necolas.github.io/normalize.css/
       max-height:0; overflow:hidden; transition:max-height .3s ease;
     }
     .nav-links.open{max-height:320px; padding:8px 24px 20px;}
-    .nav-links a{width:100%; padding:12px 0; border-bottom:1px solid var(--border);}
+    /*.nav-links a{width:100%; padding:12px 0; border-bottom:1px solid var(--border);}*/
     .nav-cta{margin-top:8px; text-align:center;}
     .burger{display:block;}
   }
