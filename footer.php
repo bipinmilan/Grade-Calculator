@@ -14,31 +14,35 @@
 <footer class="site">
   <div class="wrap">
     <div class="foot-top">
-      <div class="foot-about">
-        <a href="#top" class="logo"><span class="mark">A+</span> Scorebook</a>
-        <p>Three small tools for exam percentages, weighted CGPA and target scores — built to be fast, free, and private.</p>
+      <div class="footer-col footer-col-about">
+        <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="logo">
+            <?php if ( has_custom_logo() ) : ?>
+                  <?php the_custom_logo(); ?>
+            <?php else : ?>
+            <span class="mark">A+</span>
+            <?php endif; ?>
+            <?php bloginfo( 'name' ); ?>
+        </a>    
+          <?php if ( is_active_sidebar( 'footer-about' ) ) : ?>
+              <?php dynamic_sidebar( 'footer-about' ); ?>
+          <?php else : ?>
+      <!-- Fallback shown only if no widget has been added yet -->
+      <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="logo">
+        <span class="mark">A+</span> <?php bloginfo( 'name' ); ?>
+      </a>
+      <p><?php esc_html_e( 'Add a widget to the "Footer — About" area to customize this section.', 'grade-calculator' ); ?></p>
+          <?php endif; ?>
       </div>
-      <div class="foot-col">
-        <h4>Tools</h4>
+      <div class="footer-col footer-col-2">
         <?php
-          wp_nav_menu(array(
-            'theme_location' => 'tools-menu',
-            'container' => 'ul',
-            'menu_class' => 'list-unstyled tools-menu',
-            'fallback_cb' => false
-          ));
+          dynamic_sidebar( 'footer-col-2' );
         ?>
       </div>
-      <div class="foot-col">
-        <h4>Pages</h4>
-        <?php
-          wp_nav_menu(array(
-            'theme_location' => 'footerpage-menu',
-            'container' => 'ul',
-            'menu_class' => 'list-unstyled footerpage-menu',
-            'fallback_cb' => false
-          ));
-        ?>
+      <div class="footer-col footer-col-3">
+        <?php dynamic_sidebar( 'footer-col-3' ); ?>
+      </div>
+      <div class="footer-col footer-col-4">
+        <?php dynamic_sidebar( 'footer-col-4' ); ?>
       </div>
     </div>
     <div class="foot-bottom">

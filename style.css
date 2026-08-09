@@ -477,8 +477,27 @@ li.has-submenu.submenu-open > .submenu-toggle{transform:rotate(180deg);}
 
   /* ---------- Footer ---------- */
   footer.site{padding:60px 0 34px; margin-top:20px;}
-  .foot-top{display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:40px; margin-bottom:44px;}
+  .foot-top{display:grid;
+  grid-template-columns:1.3fr 1fr 1fr 1fr;
+  gap:36px;
+  margin-bottom:44px;
+  max-width:1120px;
+  margin-left:auto;
+  margin-right:auto;
+  padding:0 24px;}
   @media (max-width:700px){.foot-top{grid-template-columns:1fr; gap:32px;}}
+  @media (max-width:900px){
+  .foot-top{
+    grid-template-columns:1fr 1fr;
+    gap:32px;
+  }
+}
+@media (max-width:600px){
+  .foot-top{
+    grid-template-columns:1fr;
+    gap:28px;
+  }
+}
   .foot-about p{color:var(--ink-soft); font-size:.88rem; margin-top:14px; max-width:320px;}
   .foot-col h4{font-family:var(--mono); font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-faint); margin-bottom:16px;}
   .foot-col ul{display:flex; flex-direction:column; gap:11px;}
@@ -3064,4 +3083,88 @@ ul.sidebar-social-icons.is-vertical li > a:hover{
 @media (max-width:640px){
   .carousel-card{ flex-basis:200px; }
   .carousel-controls{ display:none; } /* touch swipe handles it on mobile */
+}
+
+.foot-about .logo img.custom-logo{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  object-fit:cover;
+  margin-right:10px;
+  vertical-align:middle;
+}
+/* ============================================================
+   Dynamic footer widget areas
+   ============================================================ */
+
+.footer-col-about .logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-family:var(--display);
+  font-weight:700;
+  font-size:1.15rem;
+  color:var(--ink);
+  text-decoration:none;
+  margin-bottom:14px;
+}
+.footer-col-about .logo .mark{
+  width:34px; height:34px; border-radius:50%; border:2px solid var(--red);
+  display:flex; align-items:center; justify-content:center; color:var(--red);
+  font-size:.85rem; font-family:var(--mono); font-weight:700; transform:rotate(-8deg);
+}
+.footer-col-about p,
+.footer-widget p{
+  color:var(--ink-soft);
+  font-size:.88rem;
+  line-height:1.65;
+  max-width:320px;
+}
+
+.footer-widget .widget-title{
+  font-family:var(--mono);
+  font-size:.72rem;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--ink-faint);
+  margin-bottom:16px;
+}
+
+.footer-widget ul{
+  list-style:none;
+  margin:0; padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:11px;
+}
+.footer-widget li{
+  font-size:.88rem;
+}
+.footer-widget a{
+  color:var(--ink-soft);
+  text-decoration:none;
+  transition:color .2s ease;
+}
+.footer-widget a:hover{ color:var(--coral, var(--red)); }
+
+/* Search or text widgets dropped into the footer inherit sane defaults too */
+.footer-widget input[type="search"],
+.footer-widget input[type="text"]{
+  width:100%;
+  padding:9px 12px;
+  border-radius:9px;
+  border:1.5px solid var(--border);
+  background:var(--paper);
+  font-family:var(--body);
+  font-size:.85rem;
+  outline:none;
+}
+
+/* Widgets stack multiple times inside one column — space them out */
+.footer-widget + .footer-widget{
+  margin-top:24px;
+}
+
+.footer-col-3 .widget_nav_menu{
+  margin-top: 20px;
 }

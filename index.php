@@ -20,9 +20,9 @@ get_header();
   <section class="hero">
     <div class="wrap">
       <div>
-        <span class="eyebrow">Three tools, one report card</span>
-        <h1>Know your grade before your teacher marks the paper<em> in red.</em></h1>
-        <p class="lead">Turn raw scores into a percentage, letter grade and CGPA in seconds — then work out your CGPA across every subject, or the exact score you need on the final to hit your target.</p>
+        <span class="eyebrow">Free calculators for grades, GPA &amp; attendance</span>
+        <h1>Know where you stand before your teacher marks the paper<em> in red.</em></h1>
+        <p class="lead">Calculate your grade, CGPA, and the exact score you need on your final. Convert GPA to percentage on any scale, check how many classes you can miss to stay above your required attendance, and plan your study hours before exam day. Six free calculators, instant results, no sign-up.</p>
         <div class="hero-ctas">
           <a href="#tools" class="btn btn-primary"><i class="fa-solid fa-calculator"></i> Explore the tools</a>
           <a href="#how" class="btn btn-ghost">See how it works</a>
@@ -61,8 +61,8 @@ get_header();
     <div class="wrap">
       <div class="section-head">
         <span class="eyebrow">The tools</span>
-        <h2>Pick the calculation you need</h2>
-        <p>Each tool solves a different question — from a single test to a full semester to what's still ahead of you.</p>
+        <h2>Pick the Calculator you need</h2>
+        <p>Grade, CGPA, final exam score, GPA to percentage, study hours, and attendance — six free calculators, each built to answer one specific question.</p>
       </div>
 
       <div class="tools-grid">

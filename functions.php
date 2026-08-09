@@ -130,6 +130,45 @@ function grade_calculator_widgets_init() {
 			'after_title'   => '</h3>',
 		)
 	);
+	register_sidebar( array(
+		'name'          => __( 'Footer — About', 'grade-calculator' ),
+		'id'            => 'footer-about',
+		'description'   => __( 'Logo, tagline, and any content for the first footer column.', 'grade-calculator' ),
+		'before_widget' => '<div id="%1$s" class="widget footer-widget %2$s">',
+		'after_widget'  => '</div>',
+		'before_title'  => '<h4 class="widget-title">',
+		'after_title'   => '</h4>',
+	) );
+
+	register_sidebar( array(
+		'name'          => __( 'Footer — Column 2', 'grade-calculator' ),
+		'id'            => 'footer-col-2',
+		'description'   => __( 'Second footer column — e.g. Tools links.', 'grade-calculator' ),
+		'before_widget' => '<div id="%1$s" class="widget footer-widget %2$s">',
+		'after_widget'  => '</div>',
+		'before_title'  => '<h4 class="widget-title">',
+		'after_title'   => '</h4>',
+	) );
+
+	register_sidebar( array(
+		'name'          => __( 'Footer — Column 3', 'grade-calculator' ),
+		'id'            => 'footer-col-3',
+		'description'   => __( 'Third footer column — e.g. Site links.', 'grade-calculator' ),
+		'before_widget' => '<div id="%1$s" class="widget footer-widget %2$s">',
+		'after_widget'  => '</div>',
+		'before_title'  => '<h4 class="widget-title">',
+		'after_title'   => '</h4>',
+	) );
+
+	register_sidebar( array(
+		'name'          => __( 'Footer — Column 4', 'grade-calculator' ),
+		'id'            => 'footer-col-4',
+		'description'   => __( 'Third footer column — e.g. Site links.', 'grade-calculator' ),
+		'before_widget' => '<div id="%1$s" class="widget footer-widget %2$s">',
+		'after_widget'  => '</div>',
+		'before_title'  => '<h4 class="widget-title">',
+		'after_title'   => '</h4>',
+	) );
 }
 add_action( 'widgets_init', 'grade_calculator_widgets_init' );
 
