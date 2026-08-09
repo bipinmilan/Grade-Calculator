@@ -11,6 +11,7 @@ get_header();
 ?>
 
 	<main id="primary" class="site-main">
+	<div class="wrap">
 
 		<?php if ( have_posts() ) : ?>
 
@@ -21,31 +22,33 @@ get_header();
 				?>
 			</header><!-- .page-header -->
 
-			<?php
-			/* Start the Loop */
-			while ( have_posts() ) :
-				the_post();
+			<div class="archive-layout">
 
-				/*
-				 * Include the Post-Type-specific template for the content.
-				 * If you want to override this in a child theme, then include a file
-				 * called content-___.php (where ___ is the Post Type name) and that will be used instead.
-				 */
-				get_template_part( 'template-parts/content', get_post_type() );
+				<div class="archive-main">
+					<div class="post-list">
+						<?php
+						/* Start the Loop */
+						while ( have_posts() ) :
+							the_post();
+							get_template_part( 'template-parts/content', get_post_type() );
+						endwhile;
+						the_posts_navigation();
+						?>
+					</div><!-- .post-list -->
+				</div><!-- .archive-main -->
 
-			endwhile;
+				<?php get_sidebar(); ?>
 
-			the_posts_navigation();
+			</div><!-- .archive-layout -->
 
-		else :
+		<?php else : ?>
 
-			get_template_part( 'template-parts/content', 'none' );
+			<?php get_template_part( 'template-parts/content', 'none' ); ?>
 
-		endif;
-		?>
+		<?php endif; ?>
 
-	</main><!-- #main -->
-
+	</div><!-- .wrap -->
+</main><!-- #main -->
 <?php
-get_sidebar();
+
 get_footer();

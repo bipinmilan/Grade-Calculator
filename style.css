@@ -1863,29 +1863,1205 @@ li.has-submenu.submenu-open > .submenu-toggle{transform:rotate(180deg);}
 }
 
 /* ============================================================
-   Archive/loop card footer (categories/tags row under Read full post)
+   Archive page — two-column layout (posts + sidebar)
    ============================================================ */
-.blog-card-footer{
-  margin-top:12px;
-  padding-top:0;
-  border-top:none;
+
+.site-main{ padding:44px 0 70px; }
+
+.archive-layout{
+  display:grid;
+  grid-template-columns:1fr 300px;
+  gap:44px;
+  align-items:start;
+}
+@media (max-width:900px){
+  .archive-layout{
+    grid-template-columns:1fr;
+  }
+}
+
+.archive-main{ min-width:0; } /* prevents card content overflowing the grid track */
+
+/* ---------- Post list (title + image + excerpt + button) ---------- */
+.post-list{
   display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-  font-size:.72rem;
+  flex-direction:column;
+  gap:22px;
+  margin-bottom:36px;
 }
-.blog-card-footer:empty{ display:none; }
-.blog-card-footer a{
-  display:inline-block;
-  padding:3px 10px;
-  border-radius:14px;
+
+.post-list-item{
+  display:flex;
+  flex-direction:column;
+  background:var(--card);
   border:1px solid var(--border);
-  background:var(--paper);
-  color:var(--ink-faint);
-  text-decoration:none;
-  font-weight:600;
+  border-radius:var(--radius);
+  padding:22px;
+  transition:box-shadow .2s ease, border-color .2s ease, transform .2s ease;
 }
-.blog-card-footer a:hover{
+.post-list-item:hover{
+  box-shadow:var(--shadow);
+  border-color:transparent;
+  transform:translateY(-2px);
+}
+.post-list-item:hover .post-list-thumb{
+  transform:scale(1.03);
+}
+.post-list-thumb-link{
+  display:block;
+  border-radius:14px;
+  overflow:hidden;
+  margin:16px 0 18px;
+  border:1px solid var(--border);
+}
+.post-list-thumb{
+  display:block;
+  width:100%;
+  aspect-ratio:16 / 8;
+  object-fit:cover;
+  background:var(--paper);
+  transition:transform .35s ease;}
+
+.post-list-thumb-fallback{
+  display:flex; align-items:center; justify-content:center;
+  aspect-ratio:16 / 8;
+  color:var(--ink-faint);
+  font-size:2rem;}
+
+.post-list-body{ min-width:0; }
+
+.post-list-title{
+  font-family:var(--display);
+  font-size:1.3rem;
+  font-weight:700;
+  line-height:1.3;
+  margin:10px 0 8px;
+}
+.post-list-title a{
+  color:var(--ink);
+  text-decoration:none;
+}
+.post-list-title a:hover{ color:var(--coral, var(--red)); }
+
+.post-list-excerpt{
+  color:var(--ink-soft);
+  font-size:.92rem;
+  line-height:1.7;
+  margin:0 0 18px;
+}
+
+.post-list-btn{
+  width:auto;
+  align-self:flex-start;
+  display:inline-flex;
+  padding-left:22px;
+  padding-right:22px;
+  font-size:.86rem;
+}
+
+@media (max-width:640px){
+  .post-list-item{ padding:18px; }
+  .post-list-thumb,
+  .post-list-thumb-fallback{ aspect-ratio:16 / 10; }
+}
+
+/* ---------- Sidebar ---------- */
+.archive-sidebar{
+  position:sticky;
+  top:90px; /* clears your sticky header */
+}
+.archive-sidebar .widget{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px;
+  margin-bottom:20px;
+}
+.archive-sidebar .widget-title{
+  font-family:var(--display);
+  font-size:1rem;
+  font-weight:700;
+  color:var(--ink);
+  margin-bottom:16px;
+  padding-bottom:12px;
+  border-bottom:1px dashed var(--paper-line);
+}
+.archive-sidebar .widget ul{
+  list-style:none;
+  margin:0; padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:11px;
+}
+.archive-sidebar .widget li{
+  font-size:.88rem;
+}
+.archive-sidebar .widget a{
+  color:var(--ink-soft);
+  text-decoration:none;
+}
+.archive-sidebar .widget a:hover{ color:var(--coral, var(--red)); }
+.archive-sidebar .widget input[type="search"],
+.archive-sidebar .widget input[type="text"]{
+  width:100%;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1.5px solid var(--border);
+  background:var(--paper);
+  font-family:var(--body);
+  font-size:.88rem;
+  outline:none;
+}
+.archive-sidebar .widget input:focus{
+  border-color:var(--coral, var(--red));
+}
+.archive-sidebar .widget button[type="submit"]{
+  margin-top:8px;
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:var(--ink);
+  color:#fff;
+  font-weight:600;
+  font-size:.85rem;
+  cursor:pointer;
+}
+.archive-sidebar .widget button[type="submit"]:hover{ background:var(--coral, var(--red)); }
+
+@media (max-width:900px){
+  .archive-sidebar{
+    position:static;
+    margin-top:12px;
+  }
+}
+
+/* ---------- Pagination (unchanged from before, included for completeness) ---------- */
+.scorebook-pagination{
+  display:flex;
+  justify-content:center;
+  margin-top:8px;
+}
+.scorebook-pagination .nav-links{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.scorebook-pagination .page-numbers{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:40px;
+  height:40px;
+  padding:0 14px;
+  border-radius:11px;
+  border:1.5px solid var(--border);
+  background:var(--card);
+  color:var(--ink-soft);
+  font-family:var(--mono);
+  font-weight:700;
+  font-size:.85rem;
+  text-decoration:none;
+  transition:border-color .2s ease, background .2s ease, color .2s ease;
+}
+.scorebook-pagination .page-numbers:hover{
   border-color:var(--coral, var(--red));
   color:var(--coral, var(--red));
+}
+.scorebook-pagination .page-numbers.current{
+  background:var(--ink);
+  border-color:var(--ink);
+  color:#fff;
+}
+.scorebook-pagination .page-numbers.dots{
+  border:none;
+  background:none;
+  color:var(--ink-faint);
+}
+.scorebook-pagination .prev.page-numbers,
+.scorebook-pagination .next.page-numbers{
+  gap:7px;
+  padding:0 18px;
+  font-family:var(--body);
+  font-weight:600;
+}
+
+/* ---------- Empty state ---------- */
+.archive-empty{
+  max-width:480px;
+  margin:20px auto 0;
+  text-align:center;
+  padding:44px 32px;
+}
+.archive-empty h2{ font-size:1.3rem; margin-bottom:10px; }
+.archive-empty p{ color:var(--ink-soft); font-size:.92rem; }
+
+/* ============================================================
+   Sidebar — widget cards
+   ============================================================ */
+
+.widget-area{
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+.widget-area .widget,
+#secondary .widget{
+  margin-bottom:20px !important;
+}
+
+.widget-area .widget:last-child,
+#secondary .widget:last-child{
+  margin-bottom:0 !important;
+}
+
+.sidebar-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px;
+  transition:box-shadow .2s ease, border-color .2s ease;
+}
+.sidebar-card:hover{
+  box-shadow:var(--shadow);
+}
+
+.widget-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-family:var(--display);
+  font-size:1rem;
+  font-weight:700;
+  color:var(--ink);
+  margin:0 0 16px;
+  padding-bottom:14px;
+  border-bottom:1px dashed var(--paper-line);
+}
+.widget-title-icon{
+  flex:0 0 30px;
+  height:30px;
+  border-radius:50%;
+  background:var(--coral-tint, var(--paper));
+  color:var(--coral, var(--red));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.8rem;
+}
+
+/* ---------- Promo card (tools CTA at top of sidebar) ---------- */
+.sidebar-promo-card{
+  background:var(--ink);
+  border:none;
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+}
+.sidebar-promo-card::before{
+  content:"";
+  position:absolute; inset:0;
+  background:linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px) 0 0/100% 26px;
+}
+.sidebar-promo-card .widget-title{
+  color:#fff;
+  border-bottom-color:rgba(255,255,255,0.15);
+  position:relative;
+}
+.sidebar-promo-card .widget-title-icon{
+  background:rgba(255,255,255,0.14);
+  color:#fff;
+}
+.sidebar-promo-card p{
+  color:rgba(255,255,255,0.78);
+  font-size:.86rem;
+  line-height:1.6;
+  margin-bottom:18px;
+  position:relative;
+}
+.sidebar-promo-btn{
+  background:var(--coral, var(--red));
+  width:auto;
+  display:inline-flex;
+  padding-left:20px;
+  padding-right:20px;
+  font-size:.85rem;
+  position:relative;
+}
+.sidebar-promo-btn:hover{ background:#fff; color:var(--ink); }
+
+/* ---------- Generic widget content resets ---------- */
+.sidebar-card ul{
+  list-style:none;
+  margin:0; padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.sidebar-card li{
+  font-size:.88rem;
+}
+.sidebar-card li > a{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 4px;
+  color:var(--ink-soft);
+  text-decoration:none;
+  border-bottom:1px solid var(--paper-line);
+  transition:color .2s ease, padding-left .2s ease;
+}
+.sidebar-card li:last-child > a{ border-bottom:none; }
+.sidebar-card li > a:hover{
+  color:var(--coral, var(--red));
+  padding-left:8px;
+}
+.sidebar-card li > a::after{
+  content:"\f105"; /* chevron-right */
+  font-family:"Font Awesome 6 Free";
+  font-weight:900;
+  font-size:.7rem;
+  opacity:0;
+  color:var(--coral, var(--red));
+  transition:opacity .2s ease;
+}
+.sidebar-card li > a:hover::after{ opacity:1; }
+
+/* Widget-supplied counts, e.g. "Category (12)" — style the number as a chip */
+.sidebar-card .post-count,
+.sidebar-card li > a > span{
+  font-family:var(--mono);
+  font-size:.7rem;
+  font-weight:700;
+  color:var(--ink-faint);
+  background:var(--paper);
+  padding:2px 8px;
+  border-radius:10px;
+  flex-shrink:0;
+}
+
+/* ---------- Search widget ---------- */
+.sidebar-card .search-form,
+.sidebar-card .wp-block-search{
+  display:flex;
+  gap:8px;
+}
+.sidebar-card .search-form label{ flex:1; }
+.sidebar-card input[type="search"],
+.sidebar-card input.search-field{
+  width:100%;
+  padding:11px 14px;
+  border-radius:11px;
+  border:1.5px solid var(--border);
+  background:var(--paper);
+  font-family:var(--body);
+  font-size:.88rem;
+  outline:none;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+.sidebar-card input[type="search"]:focus{
+  border-color:var(--coral, var(--red));
+  box-shadow:0 0 0 3px var(--coral-tint, rgba(0,0,0,0.05));
+}
+.sidebar-card input[type="submit"],
+.sidebar-card .search-submit{
+  flex:0 0 auto;
+  padding:0 16px;
+  border:none;
+  border-radius:11px;
+  background:var(--ink);
+  color:#fff;
+  font-weight:600;
+  font-size:.85rem;
+  cursor:pointer;
+  transition:background .2s ease;
+}
+.sidebar-card input[type="submit"]:hover{ background:var(--coral, var(--red)); }
+
+/* ---------- Recent Posts widget (with thumbnails, if theme supports them) ---------- */
+.sidebar-card .widget_recent_entries ul li{
+  padding:10px 0;
+  border-bottom:1px solid var(--paper-line);
+}
+.sidebar-card .widget_recent_entries ul li:last-child{ border-bottom:none; }
+.sidebar-card .widget_recent_entries a{
+  color:var(--ink);
+  font-weight:600;
+  font-size:.88rem;
+  text-decoration:none;
+  line-height:1.4;
+  display:block;
+}
+.sidebar-card .widget_recent_entries a:hover{ color:var(--coral, var(--red)); }
+.sidebar-card .widget_recent_entries .post-date{
+  display:block;
+  font-family:var(--mono);
+  font-size:.7rem;
+  color:var(--ink-faint);
+  margin-top:4px;
+}
+
+/* ---------- Tag Cloud widget ---------- */
+.sidebar-card .tagcloud{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.sidebar-card .tagcloud a{
+  display:inline-block !important;
+  font-size:.78rem !important;
+  padding:6px 13px;
+  border-radius:20px;
+  background:var(--paper);
+  border:1px solid var(--border);
+  color:var(--ink-soft);
+  text-decoration:none;
+  transition:all .2s ease;
+}
+.sidebar-card .tagcloud a:hover{
+  background:var(--coral, var(--red));
+  border-color:var(--coral, var(--red));
+  color:#fff;
+}
+
+/* ---------- Calendar widget ---------- */
+.sidebar-card #wp-calendar{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.8rem;
+}
+.sidebar-card #wp-calendar caption{
+  font-family:var(--display);
+  font-weight:700;
+  color:var(--ink);
+  padding-bottom:12px;
+  text-align:left;
+}
+.sidebar-card #wp-calendar th{
+  font-family:var(--mono);
+  font-size:.65rem;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  padding:6px 0;
+}
+.sidebar-card #wp-calendar td{
+  text-align:center;
+  padding:7px 0;
+  color:var(--ink-soft);
+}
+.sidebar-card #wp-calendar td#today{
+  background:var(--coral, var(--red));
+  color:#fff;
+  border-radius:8px;
+  font-weight:700;
+}
+.sidebar-card #wp-calendar a{
+  color:var(--coral, var(--red));
+  font-weight:700;
+  text-decoration:none;
+}
+.sidebar-card #wp-calendar nav{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+  font-size:.78rem;
+}
+
+/* ---------- RSS widget ---------- */
+.sidebar-card .rss-widget li{
+  padding:10px 0;
+  border-bottom:1px solid var(--paper-line);
+}
+.sidebar-card .rss-widget li:last-child{ border-bottom:none; }
+.sidebar-card .rss-widget a.rsswidget{
+  color:var(--ink);
+  font-weight:600;
+  font-size:.87rem;
+  text-decoration:none;
+}
+.sidebar-card .rss-widget a.rsswidget:hover{ color:var(--coral, var(--red)); }
+.sidebar-card .rss-date{
+  display:block;
+  font-family:var(--mono);
+  font-size:.7rem;
+  color:var(--ink-faint);
+  margin-top:4px;
+}
+
+/* ---------- Text / Custom HTML widget ---------- */
+.sidebar-card .textwidget,
+.sidebar-card .widget_text{
+  font-size:.88rem;
+  color:var(--ink-soft);
+  line-height:1.7;
+}
+.sidebar-card .textwidget img{
+  max-width:100%;
+  border-radius:10px;
+  margin:10px 0;
+}
+
+/* ---------- Sticky behavior on desktop ---------- */
+@media (min-width:901px){
+  .widget-area{
+    position:sticky;
+    top:90px;
+  }
+}
+
+/* ============================================================
+   WordPress Social Links block — spacing + centering fix
+   ============================================================ */
+   /* ============================================================
+   Sidebar social icons — .sidebar-social-icons
+   Overrides generic .sidebar-card li > a widget-list styling
+   ============================================================ */
+
+.sidebar-card ul.sidebar-social-icons,
+ul.sidebar-social-icons{
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:14px !important;
+  list-style:none !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+
+.sidebar-card ul.sidebar-social-icons li,
+ul.sidebar-social-icons li{
+  display:inline-flex !important;
+  width:auto !important;
+  margin:0 !important;
+  border-bottom:none !important; /* removes the widget-list row divider */
+}
+
+.sidebar-card ul.sidebar-social-icons li > a,
+ul.sidebar-social-icons li > a{
+  display:flex !important;
+  align-items:center;
+  justify-content:center;
+  width:44px !important;
+  height:44px !important;
+  padding:0 !important;
+  border-radius:50% !important;
+  border:none !important;
+  line-height:0;
+  text-decoration:none;
+  transition:transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+.sidebar-card ul.sidebar-social-icons li > a::after{
+  content:none !important; /* removes the chevron-arrow pseudo-element from the generic widget-link style */
+}
+
+.sidebar-card ul.sidebar-social-icons svg,
+ul.sidebar-social-icons svg{
+  display:block;
+  width:19px;
+  height:19px;
+  margin:0;
+  fill:#ffffff;
+}
+
+/* Hide the "Follow Our Facebook Page" label — screen-reader only, as intended */
+ul.sidebar-social-icons .wp-block-social-link-label,
+ul.sidebar-social-icons .screen-reader-text{
+  position:absolute !important;
+  width:1px !important;
+  height:1px !important;
+  padding:0 !important;
+  margin:-1px !important;
+  overflow:hidden !important;
+  clip:rect(0, 0, 0, 0) !important;
+  white-space:nowrap !important;
+  border:0 !important;
+}
+
+/* Brand-colored circle backgrounds */
+ul.sidebar-social-icons .wp-social-link-facebook a{ background:#1877F2 !important; }
+ul.sidebar-social-icons .wp-social-link-linkedin a{ background:#0A66C2 !important; }
+ul.sidebar-social-icons .wp-social-link-pinterest a{ background:#E60023 !important; }
+ul.sidebar-social-icons .wp-social-link-x a{ background:#000000 !important; }
+
+ul.sidebar-social-icons li > a:hover{
+  transform:translateY(-3px) scale(1.06);
+  box-shadow:0 8px 18px -6px rgba(0,0,0,0.35);
+  filter:brightness(1.08);
+}
+
+/* ============================================================
+   Sidebar social icons — VERTICAL with visible text labels
+   Only applies when WP's dashboard "vertical" layout is active
+   (adds .is-vertical to the block automatically)
+   ============================================================ */
+
+ul.sidebar-social-icons.is-vertical{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+  list-style:none !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+
+ul.sidebar-social-icons.is-vertical li{
+  display:block !important;
+  width:100% !important;
+  margin:0 !important;
+}
+
+ul.sidebar-social-icons.is-vertical li > a{
+  display:flex !important;
+  align-items:center;
+  gap:12px;
+  width:100% !important;
+  height:auto !important;
+  padding:10px 14px !important;
+  border-radius:30px !important;
+  border:none !important;
+  text-decoration:none;
+  transition:transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+/* Icon circle sits inside the pill, doesn't stretch full width itself */
+ul.sidebar-social-icons.is-vertical svg{
+  display:block;
+  flex:0 0 auto;
+  width:18px;
+  height:18px;
+  fill:#ffffff;
+}
+
+/* Make the label visible (undo screen-reader-only hiding) */
+ul.sidebar-social-icons.is-vertical .wp-block-social-link-label{
+  position:static !important;
+  width:auto !important;
+  height:auto !important;
+  padding:0 !important;
+  margin:0 !important;
+  overflow:visible !important;
+  clip:auto !important;
+  white-space:normal !important;
+  color:#ffffff;
+  font-family:var(--body);
+  font-size:.85rem;
+  font-weight:600;
+}
+
+/* Brand colors — full pill background this time, not just the icon */
+ul.sidebar-social-icons.is-vertical .wp-social-link-facebook a{ background:#1877F2 !important; }
+ul.sidebar-social-icons.is-vertical .wp-social-link-linkedin a{ background:#0A66C2 !important; }
+ul.sidebar-social-icons.is-vertical .wp-social-link-pinterest a{ background:#E60023 !important; }
+ul.sidebar-social-icons.is-vertical .wp-social-link-x a{ background:#000000 !important; }
+
+ul.sidebar-social-icons.is-vertical li > a:hover{
+  transform:translateX(4px);
+  box-shadow:0 8px 18px -6px rgba(0,0,0,0.35);
+  filter:brightness(1.08);
+}
+/* ============================================================
+   Breadcrumbs
+   ============================================================ */
+.breadcrumb-wrap{
+  padding-top:28px;
+  margin-bottom:4px;
+}
+.breadcrumbs{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  font-size:.82rem;
+  color:var(--ink-faint);
+}
+.breadcrumbs a{
+  color:var(--ink-soft);
+  text-decoration:none;
+  font-weight:500;
+}
+.breadcrumbs a:hover{ color:var(--coral, var(--red)); }
+.breadcrumb-sep{
+  font-size:.6rem;
+  color:var(--ink-faint);
+  opacity:.6;
+}
+.breadcrumb-current{
+  color:var(--ink);
+  font-weight:600;
+  max-width:340px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+@media (max-width:600px){
+  .breadcrumb-current{ max-width:160px; }
+}
+
+/* ============================================================
+   Reading-friendly post content — larger, more legible on all devices
+   ============================================================ */
+.single-post-main .entry-content{
+  font-size:1.05rem;
+  line-height:1.85;
+}
+@media (max-width:640px){
+  .single-post-main .entry-content{
+    font-size:1rem;
+    line-height:1.75;
+  }
+  .post-hero{ padding:38px 0 26px; }
+  .post-content-card{ padding:22px !important; }
+}
+.single-post-main .entry-content p{
+  margin-bottom:22px;
+}
+
+/* ============================================================
+   Previous / Next post navigation
+   ============================================================ */
+.post-navigation{
+  max-width:780px;
+  margin:0 auto 60px;
+  padding:0 24px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+@media (max-width:640px){
+  .post-navigation{ grid-template-columns:1fr; }
+}
+.post-navigation .nav-links{
+  display:contents;
+}
+.post-navigation a{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding:16px 18px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  text-decoration:none;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+.post-navigation a:hover{
+  border-color:var(--coral, var(--red));
+  box-shadow:var(--shadow);
+}
+.post-navigation .nav-next{ text-align:right; }
+.post-nav-label{
+  font-family:var(--mono);
+  font-size:.7rem;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:var(--coral, var(--red));
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.post-navigation .nav-next .post-nav-label{ justify-content:flex-end; }
+.post-nav-title{
+  font-family:var(--display);
+  font-weight:700;
+  color:var(--ink);
+  font-size:.92rem;
+  line-height:1.4;
+}
+
+/* ============================================================
+   Comments section
+   ============================================================ */
+.comments-wrap{ max-width:780px; margin:0 auto 40px; }
+.comments-area{ margin-top:8px; }
+
+.comments-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-family:var(--display);
+  font-size:1.25rem;
+  font-weight:700;
+  color:var(--ink);
+  margin-bottom:24px;
+  padding-bottom:18px;
+  border-bottom:1px dashed var(--paper-line);
+}
+.comments-title i{ color:var(--coral, var(--red)); font-size:1rem; }
+
+.comment-list{
+  list-style:none;
+  margin:0 0 32px;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.comment-list .children{
+  list-style:none;
+  margin:16px 0 0;
+  padding:0 0 0 28px;
+  border-left:2px solid var(--paper-line);
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+@media (max-width:600px){
+  .comment-list .children{ padding-left:16px; }
+}
+
+.comment-body{
+  background:var(--paper);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:18px 20px;
+}
+.bypostauthor > .comment-body{
+  border-color:var(--coral, var(--red));
+  background:var(--coral-tint, var(--paper));
+}
+
+.comment-author{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:10px;
+}
+.comment-author .avatar{
+  border-radius:50%;
+  border:2px solid var(--card);
+  box-shadow:0 0 0 1px var(--border);
+}
+.comment-author .fn{
+  font-family:var(--display);
+  font-weight:700;
+  font-style:normal;
+  font-size:.92rem;
+  color:var(--ink);
+}
+.comment-metadata{
+  font-size:.72rem;
+  color:var(--ink-faint);
+  font-family:var(--mono);
+}
+.comment-metadata a{ color:inherit; text-decoration:none; }
+
+.comment-content p{
+  font-size:.9rem;
+  color:var(--ink-soft);
+  line-height:1.7;
+  margin:0 0 10px;
+}
+.comment-content p:last-child{ margin-bottom:0; }
+
+.comment-awaiting-moderation{
+  display:inline-block;
+  margin-top:8px;
+  padding:4px 12px;
+  border-radius:14px;
+  background:var(--amber-tint);
+  color:var(--amber);
+  font-size:.74rem;
+  font-weight:700;
+}
+
+.reply{
+  margin-top:10px;
+}
+.comment-reply-link{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:.78rem;
+  font-weight:600;
+  color:var(--coral, var(--red));
+  text-decoration:none;
+  padding:5px 12px;
+  border-radius:14px;
+  border:1.5px solid var(--coral, var(--red));
+  transition:background .2s ease, color .2s ease;
+}
+.comment-reply-link:hover{
+  background:var(--coral, var(--red));
+  color:#fff;
+}
+
+.no-comments{
+  color:var(--ink-faint);
+  font-size:.9rem;
+  padding:16px 0;
+}
+
+/* ---------- Comment form ---------- */
+.comment-respond{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:28px;
+  margin-top:8px;
+}
+.comment-reply-title{
+  font-family:var(--display);
+  font-size:1.1rem;
+  font-weight:700;
+  margin-bottom:6px;
+}
+.comment-notes,
+.logged-in-as{
+  font-size:.84rem;
+  color:var(--ink-faint);
+  margin-bottom:20px;
+}
+.comment-notes a,
+.logged-in-as a{ color:var(--coral, var(--red)); }
+
+.comment-form-field{
+  margin-bottom:16px;
+}
+.comment-form-field label,
+.comment-form label{
+  display:block;
+  font-size:.83rem;
+  font-weight:600;
+  margin-bottom:6px;
+  color:var(--ink-soft);
+}
+.comment-form input[type="text"],
+.comment-form input[type="email"],
+.comment-form input[type="url"],
+.comment-form textarea{
+  width:100%;
+  padding:12px 14px;
+  border-radius:11px;
+  border:1.5px solid var(--border);
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:.92rem;
+  outline:none;
+  resize:vertical;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+.comment-form input:focus,
+.comment-form textarea:focus{
+  border-color:var(--coral, var(--red));
+  box-shadow:0 0 0 3px var(--coral-tint, rgba(0,0,0,0.05));
+}
+.comment-form-author,
+.comment-form-email,
+.comment-form-url{
+  margin-bottom:16px;
+}
+@media (min-width:640px){
+  .comment-form-author,
+  .comment-form-email{
+    display:inline-block;
+    width:calc(50% - 8px);
+  }
+  .comment-form-author{ margin-right:16px; }
+}
+.comment-form-cookies-consent{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:.8rem;
+  color:var(--ink-faint);
+  margin-bottom:18px;
+}
+.comment-submit-btn{
+  width:auto !important;
+  display:inline-flex;
+  padding-left:26px;
+  padding-right:26px;
+}
+.form-submit{ margin-top:6px; }
+
+/* ============================================================
+   Single post — two-column layout (content + sidebar)
+   ============================================================ */
+.single-layout{
+  display:grid;
+  grid-template-columns:1fr 300px;
+  gap:44px;
+  align-items:start;
+  padding-top:8px;
+}
+@media (max-width:900px){
+  .single-layout{
+    grid-template-columns:1fr;
+  }
+}
+
+.single-main{ min-width:0; }
+
+/* Post hero now sits inline in the left column instead of the earlier
+   full-bleed .post-hero band — since it shares width with the sidebar */
+.post-hero-inline{
+  padding-bottom:24px;
+  margin-bottom:24px;
+  border-bottom:1px solid var(--border);
+}
+.post-hero-inline h1{
+  font-size:clamp(1.6rem, 3.4vw, 2.2rem);
+  line-height:1.2;
+  margin:12px 0 16px;
+}
+.post-hero-inline .post-meta{
+  justify-content:flex-start;
+  gap:18px;
+}
+
+.post-thumb{
+  margin:0 0 28px;
+  border-radius:var(--radius);
+  overflow:hidden;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+}
+.post-thumb img{
+  display:block;
+  width:100%;
+  height:auto;
+}
+
+.post-content-card{
+  margin:0 0 28px;
+  max-width:none; /* no longer needs its own max-width — the grid column controls that */
+}
+
+.comments-wrap{ max-width:none; margin:0 0 28px; }
+
+.post-navigation{
+  max-width:none;
+  margin:0;
+  padding:0;
+}
+/* ============================================================
+   Recent posts carousel (end of single post content)
+   ============================================================ */
+
+.carousel-section{
+  margin:8px 0 32px;
+}
+
+.carousel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:18px;
+}
+.carousel-head h2{
+  font-family:var(--display);
+  font-size:1.15rem;
+  font-weight:700;
+  color:var(--ink);
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+.carousel-head h2 i{ color:var(--coral, var(--red)); font-size:1rem; }
+
+.carousel-controls{
+  display:flex;
+  gap:8px;
+}
+.carousel-btn{
+  width:36px; height:36px;
+  border-radius:50%;
+  border:1.5px solid var(--border);
+  background:var(--card);
+  color:var(--ink-soft);
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.8rem;
+  transition:border-color .2s ease, color .2s ease, background .2s ease;
+}
+.carousel-btn:hover{
+  border-color:var(--coral, var(--red));
+  color:var(--coral, var(--red));
+}
+.carousel-btn:disabled{
+  opacity:.35;
+  cursor:default;
+  pointer-events:none;
+}
+
+.carousel-track{
+  display:flex;
+  gap:16px;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  padding-bottom:8px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none; /* Firefox */
+}
+.carousel-track::-webkit-scrollbar{ display:none; } /* Chrome/Safari */
+
+.carousel-card{
+  flex:0 0 240px;
+  scroll-snap-align:start;
+  display:flex;
+  flex-direction:column;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  text-decoration:none;
+  transition:box-shadow .2s ease, border-color .2s ease, transform .2s ease;
+}
+.carousel-card:hover{
+  box-shadow:var(--shadow);
+  border-color:transparent;
+  transform:translateY(-3px);
+}
+
+.carousel-thumb-wrap{ overflow:hidden; }
+.carousel-thumb{
+  display:block;
+  width:100%;
+  height:140px;
+  object-fit:cover;
+  background:var(--paper);
+  transition:transform .35s ease;
+}
+.carousel-card:hover .carousel-thumb{ transform:scale(1.06); }
+.carousel-thumb-fallback{
+  display:flex; align-items:center; justify-content:center;
+  height:140px;
+  color:var(--ink-faint);
+  font-size:1.5rem;
+}
+
+.carousel-card-body{
+  padding:14px 16px 16px;
+}
+.carousel-date{
+  font-family:var(--mono);
+  font-size:.68rem;
+  color:var(--ink-faint);
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.carousel-title{
+  font-family:var(--display);
+  font-size:.92rem;
+  font-weight:700;
+  color:var(--ink);
+  line-height:1.35;
+  margin-top:6px;
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.carousel-card:hover .carousel-title{ color:var(--coral, var(--red)); }
+
+@media (max-width:640px){
+  .carousel-card{ flex-basis:200px; }
+  .carousel-controls{ display:none; } /* touch swipe handles it on mobile */
 }

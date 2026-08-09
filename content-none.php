@@ -9,43 +9,13 @@
 
 ?>
 
-<section class="no-results not-found">
-	<header class="page-header">
-		<h1 class="page-title"><?php esc_html_e( 'Nothing Found', 'grade-calculator' ); ?></h1>
-	</header><!-- .page-header -->
-
-	<div class="page-content">
-		<?php
-		if ( is_home() && current_user_can( 'publish_posts' ) ) :
-
-			printf(
-				'<p>' . wp_kses(
-					/* translators: 1: link to WP admin new post page. */
-					__( 'Ready to publish your first post? <a href="%1$s">Get started here</a>.', 'grade-calculator' ),
-					array(
-						'a' => array(
-							'href' => array(),
-						),
-					)
-				) . '</p>',
-				esc_url( admin_url( 'post-new.php' ) )
-			);
-
-		elseif ( is_search() ) :
-			?>
-
-			<p><?php esc_html_e( 'Sorry, but nothing matched your search terms. Please try again with some different keywords.', 'grade-calculator' ); ?></p>
-			<?php
-			get_search_form();
-
-		else :
-			?>
-
-			<p><?php esc_html_e( 'It seems we can&rsquo;t find what you&rsquo;re looking for. Perhaps searching can help.', 'grade-calculator' ); ?></p>
-			<?php
-			get_search_form();
-
-		endif;
-		?>
-	</div><!-- .page-content -->
-</section><!-- .no-results -->
+<div class="card archive-empty">
+	<div class="how-panel-stamp" style="margin:0 auto 18px; border-color:var(--ink-faint); outline-color:var(--ink-faint); color:var(--ink-faint);">
+		<i class="fa-solid fa-magnifying-glass"></i>
+	</div>
+	<h2><?php esc_html_e( 'Nothing here yet', 'grade-calculator' ); ?></h2>
+	<p><?php esc_html_e( "We couldn't find any posts in this section. Try browsing the full blog instead.", 'grade-calculator' ); ?></p>
+	<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="btn btn-primary" style="width:auto; display:inline-flex; padding-left:24px; padding-right:24px; margin-top:6px;">
+		<i class="fa-solid fa-house"></i> <?php esc_html_e( 'Back to home', 'grade-calculator' ); ?>
+	</a>
+</div>

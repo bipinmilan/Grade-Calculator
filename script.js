@@ -68,6 +68,43 @@ document.addEventListener('DOMContentLoaded', function () {
   })();
 
   // ============================================================
+  // Recent posts carousel (single post pages)
+  // ============================================================
+  (function () {
+    const track = document.querySelector('.carousel-track');
+    if (!track) return; // not on this page
+
+    const prevBtn = document.querySelector('.carousel-prev');
+    const nextBtn = document.querySelector('.carousel-next');
+    if (!prevBtn || !nextBtn) return;
+
+    function cardWidth() {
+      const card = track.querySelector('.carousel-card');
+      if (!card) return 260;
+      const style = getComputedStyle(track);
+      const gap = parseFloat(style.columnGap || style.gap) || 16;
+      return card.getBoundingClientRect().width + gap;
+    }
+
+    function updateButtons() {
+      const maxScroll = track.scrollWidth - track.clientWidth - 2;
+      prevBtn.disabled = track.scrollLeft <= 0;
+      nextBtn.disabled = track.scrollLeft >= maxScroll;
+    }
+
+    prevBtn.addEventListener('click', function () {
+      track.scrollBy({ left: -cardWidth() * 2, behavior: 'smooth' });
+    });
+    nextBtn.addEventListener('click', function () {
+      track.scrollBy({ left: cardWidth() * 2, behavior: 'smooth' });
+    });
+
+    track.addEventListener('scroll', updateButtons);
+    window.addEventListener('resize', updateButtons);
+    updateButtons();
+  })();
+
+  // ============================================================
   // 1) Grade Calculator  (#gradeForm)
   // ============================================================
   (function () {

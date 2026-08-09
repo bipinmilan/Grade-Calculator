@@ -416,5 +416,4 @@ $scorebook_blog_query = new WP_Query( array(
 	
 
 <?php
-get_sidebar();
 get_footer();
